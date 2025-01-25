@@ -1,0 +1,147 @@
+// Generator for Prisma Client
+generator client {
+  provider = "prisma-client-js" // Specifies the Prisma Client to be used
+}
+
+// Datasource Configuration
+datasource db {
+  provider = "mysql"           // Change to "postgresql" if you're using PostgreSQL
+  url      = env("DATABASE_URL") // Reads database connection string from .env
+}
+
+// Brand Table
+model Brand {
+  id              Int           @id @default(autoincrement()) // Primary Key
+  name            String
+  description     String
+  cardImage       String
+  heroImage       String
+  logo            String
+  showOnHomepage  Boolean       @default(false) // Boolean flag for homepage visibility
+  socials         BrandSocial[] // Relation to BrandSocial
+  items           Item[]        // Relation to Item
+  comments        Comment[]     // Relation to Comment
+  resources       BrandResource[] // Relation to BrandResource
+  createdAt       DateTime      @default(now())  // Auto-set timestamp
+  updatedAt       DateTime      @updatedAt       // Auto-update timestamp
+}
+
+// BrandSocial Table
+model BrandSocial {
+  id        Int    @id @default(autoincrement())
+  name      String // Social platform name
+  url       String // URL of the social platform
+  icon      String // Icon file path
+  brandId   Int
+  brand     Brand  @relation(fields: [brandId], references: [id]) // Foreign Key
+  createdAt DateTime @default(now())
+}
+
+// Item Table
+model Item {
+  id             Int      @id @default(autoincrement())
+  name           String
+  cardImage      String
+  description    String
+  showOnHomepage Boolean  @default(false)
+  brandId        Int
+  brand          Brand    @relation(fields: [brandId], references: [id]) // Foreign Key
+  createdAt      DateTime @default(now())
+}
+
+// Comment Table
+model Comment {
+  id             Int      @id @default(autoincrement())
+  name           String   // Name of the person giving feedback
+  review         String   // Feedback content
+  showOnHomepage Boolean  @default(false)
+  brandId        Int
+  brand          Brand    @relation(fields: [brandId], references: [id]) // Foreign Key
+  createdAt      DateTime @default(now())
+}
+
+// General Resource Table
+model Resource {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  filePath    String
+  createdAt   DateTime @default(now())
+}
+
+// Brand Resources Table
+model BrandResource {
+  id        Int    @id @default(autoincrement())
+  filePath  String
+  fileType  String // E.g., "PDF" or "Image"
+  brandId   Int
+  brand     Brand  @relation(fields: [brandId], references: [id]) // Foreign Key
+  createdAt DateTime @default(now())
+}
+
+// Blog Table
+model Blog {
+  id             Int      @id @default(autoincrement())
+  title          String
+  content        String   // Blog content
+  showOnHomepage Boolean  @default(false)
+  gallery        BlogGallery[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// Blog Gallery Table
+model BlogGallery {
+  id       Int    @id @default(autoincrement())
+  imagePath String
+  blogId   Int
+  blog     Blog   @relation(fields: [blogId], references: [id]) // Foreign Key
+}
+
+// Event Table
+model Event {
+  id             Int      @id @default(autoincrement())
+  title          String
+  content        String
+  showOnHomepage Boolean  @default(false)
+  gallery        EventGallery[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// Event Gallery Table
+model EventGallery {
+  id       Int    @id @default(autoincrement())
+  imagePath String
+  eventId  Int
+  event    Event  @relation(fields: [eventId], references: [id]) // Foreign Key
+}
+
+// User Table
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique // Unique email for each user
+  password  String   // Hashed password
+  username  String   @unique // Unique username
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Website Socials Table
+model WebsiteSocial {
+  id        Int      @id @default(autoincrement())
+  name      String   // Social platform name
+  url       String   // URL
+  icon      String   // Icon file path
+  createdAt DateTime @default(now())
+}
+
+
+// Reset password tokens Table
+model PasswordTokens {
+  id        Int      @id @default(autoincrement())
+  token      String  @unique
+  createdAt DateTime @default(now())
+}
+
