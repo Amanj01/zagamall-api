@@ -1,6 +1,10 @@
 const prisma = require("../prisma");
 
-const paginationMiddleware = (modelName, allowedFilters = []) => {
+const paginationMiddleware = (
+  modelName,
+  allowedFilters = [],
+  selecters = {}
+) => {
   return async (req, res, next) => {
     try {
       const page = parseInt(req.query.page);
@@ -32,6 +36,9 @@ const paginationMiddleware = (modelName, allowedFilters = []) => {
         skip,
         take,
         orderBy: { [sortBy]: order },
+        include: selecters.include,
+        select: selecters.select,
+        omit: selecters.omit,
       });
 
       const totalCount =

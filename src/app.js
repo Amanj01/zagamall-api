@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 
 // Import routes
 const brandRoutes = require("./routes/brandRoutes");
@@ -13,6 +14,10 @@ const eventRoutes = require("./routes/eventRoutes");
 const userRoutes = require("./routes/userRoutes");
 const passwordResetRoutes = require("./routes/passwordResetRoutes");
 const websiteSocialRoutes = require("./routes/websiteSocialRoutes");
+const formRoutes = require("./routes/formRoutes");
+const roleRoutes = require("./routes/roleRoutes");
+const permissionsRoutes = require("./routes/PermissionRoutes");
+
 const extractClientIp = require("./middlewares/clientIpMiddleware");
 
 dotenv.config();
@@ -21,6 +26,7 @@ const app = express();
 
 app.use(extractClientIp);
 app.use(express.json());
+app.use(cors());
 
 // Serve static files
 app.use("/uploads", express.static("src/assets/uploads"));
@@ -28,15 +34,18 @@ app.use("/uploads", express.static("src/assets/uploads"));
 // Register routes
 app.use("/brands", brandRoutes); // Brand routes
 app.use("/brands", brandSocialRoutes); // Brand Socials routes
-app.use("/brands", itemRoutes); // Item routes
-app.use("/brands", commentRoutes); // Comment routes
-app.use("/brands", brandResourceRoutes); // Brand Resource routes
+app.use("/comments", commentRoutes); // Comment routes
+app.use("/items", itemRoutes); // Item routes
+app.use("/brand-resources", brandResourceRoutes); // Brand Resource routes
 app.use("/resources", resourceRoutes); // Resource routes
 app.use("/blogs", blogRoutes); // Blog routes
 app.use("/events", eventRoutes); // Event routes
 app.use("/users", userRoutes); // User routes
 app.use("/website-socials", websiteSocialRoutes); // Brand socials routes
 app.use("/password", passwordResetRoutes); // Password reset routes
+app.use("/form", formRoutes); // Form routes
+app.use("/roles", roleRoutes); // Role routes
+app.use("/permissions", permissionsRoutes); // Permissions routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

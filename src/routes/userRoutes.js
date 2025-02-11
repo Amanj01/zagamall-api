@@ -7,17 +7,27 @@ const {
   getUserById,
   updateUser,
   deleteUser,
+  me,
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
 
 const router = express.Router();
 
-router.post("/register", upload.none(), registerUser);
+router.post("/", upload.none(), registerUser);
 
 router.post("/login", upload.none(), loginUser);
 
-router.get("/", protect, paginationMiddleware("user"));
+router.get(
+  "/",
+  protect,
+  paginationMiddleware("user", [], {
+    include: { role: true },
+    omit: { password: true, updatedAt: true },
+  })
+);
+
+router.get("/auth/me", protect, me);
 
 router.get("/:id", protect, getUserById);
 

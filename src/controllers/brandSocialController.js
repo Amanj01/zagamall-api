@@ -16,8 +16,7 @@ const getBrandSocials = async (req, res) => {
 // Add a new social link for a specific brand
 const createBrandSocial = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, url } = req.body;
+    const { name, url, brandId } = req.body;
 
     const icon = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -26,7 +25,9 @@ const createBrandSocial = async (req, res) => {
         name,
         url,
         icon,
-        brandId: parseInt(id),
+        brand: {
+          connect: { id: parseInt(brandId) },
+        },
       },
     });
 
@@ -39,7 +40,7 @@ const createBrandSocial = async (req, res) => {
 // Update a specific social link for a brand
 const updateBrandSocial = async (req, res) => {
   try {
-    const { brandId, socialId } = req.params;
+    const { socialId } = req.params;
     const { name, url } = req.body;
 
     const icon = req.file ? `/uploads/${req.file.filename}` : null;
@@ -48,7 +49,7 @@ const updateBrandSocial = async (req, res) => {
       where: { id: parseInt(socialId) },
     });
 
-    if (!existingSocial || existingSocial.brandId !== parseInt(brandId)) {
+    if (!existingSocial) {
       return res.status(404).json({ message: "Social link not found" });
     }
 
@@ -58,6 +59,9 @@ const updateBrandSocial = async (req, res) => {
         name,
         url,
         icon: icon || existingSocial.icon,
+        brand: {
+          connect: { id: parseInt(brandId) },
+        },
       },
     });
 
@@ -70,13 +74,13 @@ const updateBrandSocial = async (req, res) => {
 // Delete a specific social link for a brand
 const deleteBrandSocial = async (req, res) => {
   try {
-    const { brandId, socialId } = req.params;
+    const { socialId } = req.params;
 
     const existingSocial = await prisma.brandSocial.findUnique({
       where: { id: parseInt(socialId) },
     });
 
-    if (!existingSocial || existingSocial.brandId !== parseInt(brandId)) {
+    if (!existingSocial) {
       return res.status(404).json({ message: "Social link not found" });
     }
 

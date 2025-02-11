@@ -41,7 +41,9 @@ const createEvent = async (req, res) => {
           prisma.eventGallery.create({
             data: {
               imagePath: `/uploads/${file.filename}`,
-              eventId: event.id,
+              event: {
+                connect: { id: parseInt(event.is) },
+              },
             },
           })
         )
@@ -85,7 +87,9 @@ const updateEvent = async (req, res) => {
           prisma.eventGallery.create({
             data: {
               imagePath: `/uploads/${file.filename}`,
-              eventId: updatedEvent.id,
+              event: {
+                connect: { id: parseInt(event.is) },
+              },
             },
           })
         )

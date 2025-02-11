@@ -22,8 +22,7 @@ const getItemById = async (req, res) => {
 // Add a new item for a specific brand
 const createItem = async (req, res) => {
   try {
-    const { brandId } = req.params;
-    const { name, description, showOnHomepage } = req.body;
+    const { name, description, showOnHomepage, brandId } = req.body;
 
     const cardImage = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -33,7 +32,9 @@ const createItem = async (req, res) => {
         description,
         cardImage,
         showOnHomepage: showOnHomepage === "true",
-        brandId: parseInt(brandId),
+        brand: {
+          connect: { id: parseInt(brandId) },
+        },
       },
     });
 
@@ -46,8 +47,8 @@ const createItem = async (req, res) => {
 // Update an existing item for a specific brand
 const updateItem = async (req, res) => {
   try {
-    const { brandId, itemId } = req.params;
-    const { name, description, showOnHomepage } = req.body;
+    const { itemId } = req.params;
+    const { name, description, showOnHomepage, brandId } = req.body;
 
     const cardImage = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -66,6 +67,9 @@ const updateItem = async (req, res) => {
         description,
         cardImage: cardImage || existingItem.cardImage,
         showOnHomepage: showOnHomepage === "true",
+        brand: {
+          connect: { id: parseInt(brandId) },
+        },
       },
     });
 
@@ -78,13 +82,13 @@ const updateItem = async (req, res) => {
 // Delete a specific item for a brand
 const deleteItem = async (req, res) => {
   try {
-    const { brandId, itemId } = req.params;
+    const { itemId } = req.params;
 
     const existingItem = await prisma.item.findUnique({
       where: { id: parseInt(itemId) },
     });
 
-    if (!existingItem || existingItem.brandId !== parseInt(brandId)) {
+    if (!existingItem) {
       return res.status(404).json({ message: "Item not found" });
     }
 

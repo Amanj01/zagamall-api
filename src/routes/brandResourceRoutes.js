@@ -6,18 +6,29 @@ const {
   createBrandResources,
   deleteBrandResource,
 } = require("../controllers/brandResourceController");
+const paginationMiddleware = require("../middlewares/paginationMiddleware");
 
 const router = express.Router();
 
-router.get("/:brandId/resources", getBrandResources);
+router.get(
+  "/",
+  protect,
+  paginationMiddleware("brandResource", [], {
+    include: { brand: true },
+  })
+);
+router.get(
+  "/:brandId/resources",
+  paginationMiddleware("brandResource", ["brandId"])
+);
 
 router.post(
-  "/:brandId/resources",
+  "/",
   upload.array("resourceFile", 10),
   protect,
   createBrandResources
 );
 
-router.delete("/:brandId/resources/:resourceId", protect, deleteBrandResource);
+router.delete("/:resourceId", protect, deleteBrandResource);
 
 module.exports = router;

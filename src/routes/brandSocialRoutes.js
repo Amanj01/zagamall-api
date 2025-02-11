@@ -8,25 +8,26 @@ const {
   updateBrandSocial,
   deleteBrandSocial,
 } = require("../controllers/brandSocialController");
+const paginationMiddleware = require("../middlewares/paginationMiddleware");
 
 const router = express.Router();
 
-router.get("/:brandId/socials", getBrandSocials);
-
-router.post(
+router.get(
+  "/",
+  protect,
+  paginationMiddleware("brandSocial", [], {
+    include: { brand: true },
+  })
+);
+router.get(
   "/:brandId/socials",
-  upload.single("icon"),
-  protect,
-  createBrandSocial
+  paginationMiddleware("brandSocial", ["brandId"])
 );
 
-router.put(
-  "/:brandId/socials/:socialId",
-  upload.single("icon"),
-  protect,
-  updateBrandSocial
-);
+router.post("/", upload.single("icon"), protect, createBrandSocial);
 
-router.delete("/:brandId/socials/:socialId", protect, deleteBrandSocial);
+router.put("/:socialId", upload.single("icon"), protect, updateBrandSocial);
+
+router.delete("/:socialId", protect, deleteBrandSocial);
 
 module.exports = router;

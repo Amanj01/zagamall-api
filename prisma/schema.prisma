@@ -124,8 +124,10 @@ model User {
   email     String   @unique // Unique email for each user
   password  String   // Hashed password
   username  String   @unique // Unique username
+  role_id    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  role Role? @relation(fields: [role_id], references: [id])
 }
 
 // Website Socials Table
@@ -137,7 +139,6 @@ model WebsiteSocial {
   createdAt DateTime @default(now())
 }
 
-
 // Reset password tokens Table
 model PasswordTokens {
   id        Int      @id @default(autoincrement())
@@ -145,3 +146,71 @@ model PasswordTokens {
   createdAt DateTime @default(now())
 }
 
+// Dynamic Form Tables
+model Form {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  description String?
+  fields      FormField[]
+  responses   FormResponse[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model FormField {
+  id          Int           @id @default(autoincrement())
+  label       String
+  type        String        
+  options     String?       
+  isRequired  Boolean       @default(false)
+  formId      Int
+  form        Form          @relation(fields: [formId], references: [id])
+  responses   FormResponseData[]
+  files       FormResponseFile[]
+  createdAt   DateTime      @default(now())
+}
+
+model FormResponse {
+  id          Int                 @id @default(autoincrement())
+  formId      Int
+  form        Form                @relation(fields: [formId], references: [id])
+  responses   FormResponseData[]
+  files       FormResponseFile[]
+  createdAt   DateTime            @default(now())
+}
+
+model FormResponseData {
+  id          Int           @id @default(autoincrement())
+  fieldId     Int
+  field       FormField     @relation(fields: [fieldId], references: [id])
+  value       String        
+  responseId  Int
+  response    FormResponse  @relation(fields: [responseId], references: [id])
+  createdAt   DateTime      @default(now())
+}
+
+model FormResponseFile {
+  id          Int           @id @default(autoincrement())
+  fieldId     Int
+  field       FormField     @relation(fields: [fieldId], references: [id])
+  filePath    String        
+  responseId  Int
+  response    FormResponse  @relation(fields: [responseId], references: [id])
+  createdAt   DateTime      @default(now())
+}
+
+model Permissions {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Role Role[]
+}
+model Role{
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  permissions       Permissions[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  User User[]
+}

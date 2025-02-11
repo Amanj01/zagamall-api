@@ -1,16 +1,16 @@
 const express = require("express");
 const upload = require("../middlewares/uploadMiddleware");
 const {
-  getWebsiteSocials,
   createWebsiteSocial,
   updateWebsiteSocial,
   deleteWebsiteSocial,
 } = require("../controllers/websiteSocialController");
 const { protect } = require("../middlewares/authMiddleware");
+const paginationMiddleware = require("../middlewares/paginationMiddleware");
 
 const router = express.Router();
 
-router.get("/", getWebsiteSocials);
+router.get("/", paginationMiddleware("websiteSocial"));
 
 router.post("/", upload.single("icon"), protect, createWebsiteSocial);
 

@@ -1,15 +1,5 @@
 const prisma = require("../prisma");
 
-// Get all website social links
-const getWebsiteSocials = async (req, res) => {
-  try {
-    const socials = await prisma.websiteSocial.findMany();
-    res.status(200).json(socials);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Add a new website social link
 const createWebsiteSocial = async (req, res) => {
   try {
@@ -89,7 +79,6 @@ const deleteWebsiteSocial = async (req, res) => {
 };
 
 module.exports = {
-  getWebsiteSocials,
   createWebsiteSocial,
   updateWebsiteSocial,
   deleteWebsiteSocial,

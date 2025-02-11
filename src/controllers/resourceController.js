@@ -22,24 +22,19 @@ const getResourceById = async (req, res) => {
 // Upload multiple resources
 const createResources = async (req, res) => {
   try {
-    const files = req.files || []; // Files uploaded via Multer
+    const { title, description } = req.body;
+    const file = req.file;
 
-    // Map the files to create resource entries in the database
-    const resources = await Promise.all(
-      files.map((file) =>
-        prisma.resource.create({
-          data: {
-            title: file.originalname,
-            description: req.body.description || "No description provided",
-            filePath: `/uploads/${file.filename}`,
-          },
-        })
-      )
-    );
-
+    const test = await prisma.resource.create({
+      data: {
+        title,
+        description,
+        filePath: `/uploads/${file.filename}`,
+      },
+    });
     res.status(201).json({
       message: "Resources uploaded successfully",
-      resources,
+      resource: test,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

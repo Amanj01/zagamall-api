@@ -1,32 +1,18 @@
 const prisma = require("../prisma");
 
-// Get all comments for a specific brand
-const getComments = async (req, res) => {
-  try {
-    const { brandId } = req.params;
-
-    const comments = await prisma.comment.findMany({
-      where: { brandId: parseInt(brandId) },
-    });
-
-    res.status(200).json(comments);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Add a new comment for a specific brand
 const createComment = async (req, res) => {
   try {
-    const { brandId } = req.params;
-    const { name, review, showOnHomepage } = req.body;
+    const { name, review, showOnHomepage, brandId } = req.body;
 
     const newComment = await prisma.comment.create({
       data: {
         name,
         review,
         showOnHomepage: showOnHomepage === "true",
-        brandId: parseInt(brandId),
+        brand: {
+          connect: { id: parseInt(brandId) },
+        },
       },
     });
 
@@ -39,14 +25,14 @@ const createComment = async (req, res) => {
 // Update an existing comment
 const updateComment = async (req, res) => {
   try {
-    const { brandId, commentId } = req.params;
-    const { name, review, showOnHomepage } = req.body;
+    const { commentId } = req.params;
+    const { name, review, showOnHomepage, brandId } = req.body;
 
     const existingComment = await prisma.comment.findUnique({
       where: { id: parseInt(commentId) },
     });
 
-    if (!existingComment || existingComment.brandId !== parseInt(brandId)) {
+    if (!existingComment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
@@ -56,6 +42,9 @@ const updateComment = async (req, res) => {
         name,
         review,
         showOnHomepage: showOnHomepage === "true",
+        brand: {
+          connect: { id: parseInt(brandId) },
+        },
       },
     });
 
@@ -65,16 +54,32 @@ const updateComment = async (req, res) => {
   }
 };
 
+const getCommentById = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: parseInt(commentId) },
+    });
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+    res.status(200).json(comment);
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+};
 // Delete a specific comment
 const deleteComment = async (req, res) => {
   try {
-    const { brandId, commentId } = req.params;
+    const { commentId } = req.params;
 
     const existingComment = await prisma.comment.findUnique({
       where: { id: parseInt(commentId) },
     });
 
-    if (!existingComment || existingComment.brandId !== parseInt(brandId)) {
+    if (!existingComment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
@@ -86,8 +91,8 @@ const deleteComment = async (req, res) => {
 };
 
 module.exports = {
-  getComments,
   createComment,
   updateComment,
   deleteComment,
+  getCommentById,
 };

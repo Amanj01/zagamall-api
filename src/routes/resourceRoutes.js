@@ -14,7 +14,7 @@ router.get("/", paginationMiddleware("resource"));
 
 router.get("/:id", getResourceById);
 
-router.post("/", upload.array("resourceFile", 10), protect, createResources);
+router.post("/", upload.single("resourceFile"), protect, createResources);
 
 router.delete("/:id", protect, deleteResource);
 

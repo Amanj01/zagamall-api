@@ -2,26 +2,31 @@ const express = require("express");
 const upload = require("../middlewares/uploadMiddleware");
 
 const {
-  getComments,
   createComment,
   updateComment,
   deleteComment,
+  getCommentById,
 } = require("../controllers/commentController");
 const { protect } = require("../middlewares/authMiddleware");
+const paginationMiddleware = require("../middlewares/paginationMiddleware");
 
 const router = express.Router();
 
-router.get("/:brandId/comments", getComments);
-
-router.post("/:brandId/comments", upload.none(), protect, createComment);
-
-router.put(
-  "/:brandId/comments/:commentId",
-  upload.none(),
+router.get(
+  "/",
   protect,
-  updateComment
+  paginationMiddleware("comment", [], {
+    include: { brand: true },
+  })
 );
+router.get("/:brandId/comments", paginationMiddleware("comment", ["brandId"]));
 
-router.delete("/:brandId/comments/:commentId", protect, deleteComment);
+router.get("/:commentId", protect, getCommentById);
+
+router.post("/", upload.none(), protect, createComment);
+
+router.put("/:commentId", upload.none(), protect, updateComment);
+
+router.delete("/:commentId", protect, deleteComment);
 
 module.exports = router;
