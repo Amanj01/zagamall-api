@@ -6,11 +6,11 @@ const {
   loginUser,
   getUserById,
   updateUser,
-  deleteUser,
   me,
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -33,6 +33,6 @@ router.get("/:id", protect, getUserById);
 
 router.put("/:id", upload.none(), protect, updateUser);
 
-router.delete("/:id", protect, deleteUser);
+router.delete("/:id", protect, deleteRecordMiddleware("user"));
 
 module.exports = router;

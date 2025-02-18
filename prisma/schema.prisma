@@ -33,7 +33,7 @@ model BrandSocial {
   url       String // URL of the social platform
   icon      String // Icon file path
   brandId   Int
-  brand     Brand  @relation(fields: [brandId], references: [id]) // Foreign Key
+  brand     Brand  @relation(fields: [brandId], references: [id] , onDelete: Cascade,onUpdate: Cascade) // Foreign Key
   createdAt DateTime @default(now())
 }
 
@@ -45,7 +45,7 @@ model Item {
   description    String
   showOnHomepage Boolean  @default(false)
   brandId        Int
-  brand          Brand    @relation(fields: [brandId], references: [id]) // Foreign Key
+  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
   createdAt      DateTime @default(now())
 }
 
@@ -56,7 +56,7 @@ model Comment {
   review         String   // Feedback content
   showOnHomepage Boolean  @default(false)
   brandId        Int
-  brand          Brand    @relation(fields: [brandId], references: [id]) // Foreign Key
+  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
   createdAt      DateTime @default(now())
 }
 
@@ -73,9 +73,8 @@ model Resource {
 model BrandResource {
   id        Int    @id @default(autoincrement())
   filePath  String
-  fileType  String // E.g., "PDF" or "Image"
   brandId   Int
-  brand     Brand  @relation(fields: [brandId], references: [id]) // Foreign Key
+  brand     Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
   createdAt DateTime @default(now())
 }
 
@@ -84,6 +83,7 @@ model Blog {
   id             Int      @id @default(autoincrement())
   title          String
   content        String   // Blog content
+  coverImage     String   // Cover image file path
   showOnHomepage Boolean  @default(false)
   gallery        BlogGallery[]
   createdAt      DateTime @default(now())
@@ -95,7 +95,7 @@ model BlogGallery {
   id       Int    @id @default(autoincrement())
   imagePath String
   blogId   Int
-  blog     Blog   @relation(fields: [blogId], references: [id]) // Foreign Key
+  blog     Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
 }
 
 // Event Table
@@ -103,6 +103,7 @@ model Event {
   id             Int      @id @default(autoincrement())
   title          String
   content        String
+  coverImage     String
   showOnHomepage Boolean  @default(false)
   gallery        EventGallery[]
   createdAt      DateTime @default(now())
@@ -114,7 +115,7 @@ model EventGallery {
   id       Int    @id @default(autoincrement())
   imagePath String
   eventId  Int
-  event    Event  @relation(fields: [eventId], references: [id]) // Foreign Key
+  event    Event  @relation(fields: [eventId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
 }
 
 // User Table
@@ -127,7 +128,7 @@ model User {
   role_id    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  role Role? @relation(fields: [role_id], references: [id])
+  role Role? @relation(fields: [role_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
 }
 
 // Website Socials Table
@@ -161,10 +162,10 @@ model FormField {
   id          Int           @id @default(autoincrement())
   label       String
   type        String        
-  options     String?       
+  options     Json?         
   isRequired  Boolean       @default(false)
   formId      Int
-  form        Form          @relation(fields: [formId], references: [id])
+  form        Form          @relation(fields: [formId], references: [id], onDelete: Cascade,onUpdate: Cascade)
   responses   FormResponseData[]
   files       FormResponseFile[]
   createdAt   DateTime      @default(now())
@@ -173,7 +174,7 @@ model FormField {
 model FormResponse {
   id          Int                 @id @default(autoincrement())
   formId      Int
-  form        Form                @relation(fields: [formId], references: [id])
+  form        Form                @relation(fields: [formId], references: [id], onDelete: Cascade,onUpdate: Cascade)
   responses   FormResponseData[]
   files       FormResponseFile[]
   createdAt   DateTime            @default(now())
@@ -182,20 +183,20 @@ model FormResponse {
 model FormResponseData {
   id          Int           @id @default(autoincrement())
   fieldId     Int
-  field       FormField     @relation(fields: [fieldId], references: [id])
+  field       FormField     @relation(fields: [fieldId], references: [id], onDelete: Cascade,onUpdate: Cascade)
   value       String        
   responseId  Int
-  response    FormResponse  @relation(fields: [responseId], references: [id])
+  response    FormResponse  @relation(fields: [responseId], references: [id], onDelete: Cascade,onUpdate: Cascade)
   createdAt   DateTime      @default(now())
 }
 
 model FormResponseFile {
   id          Int           @id @default(autoincrement())
   fieldId     Int
-  field       FormField     @relation(fields: [fieldId], references: [id])
+  field       FormField     @relation(fields: [fieldId], references: [id], onDelete: Cascade,onUpdate: Cascade)
   filePath    String        
   responseId  Int
-  response    FormResponse  @relation(fields: [responseId], references: [id])
+  response    FormResponse  @relation(fields: [responseId], references: [id], onDelete: Cascade,onUpdate: Cascade)
   createdAt   DateTime      @default(now())
 }
 
@@ -209,8 +210,18 @@ model Permissions {
 model Role{
   id          Int           @id @default(autoincrement())
   name        String        @unique
-  permissions       Permissions[]
+  permissions Permissions[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   User User[]
+}
+
+model Home{
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String
+  coverMedia  String      
+  active      Boolean
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }

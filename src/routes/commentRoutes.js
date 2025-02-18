@@ -4,11 +4,11 @@ const upload = require("../middlewares/uploadMiddleware");
 const {
   createComment,
   updateComment,
-  deleteComment,
   getCommentById,
 } = require("../controllers/commentController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -27,6 +27,6 @@ router.post("/", upload.none(), protect, createComment);
 
 router.put("/:commentId", upload.none(), protect, updateComment);
 
-router.delete("/:commentId", protect, deleteComment);
+router.delete("/:commentId", protect, deleteRecordMiddleware("comment"));
 
 module.exports = router;

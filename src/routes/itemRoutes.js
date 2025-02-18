@@ -4,10 +4,10 @@ const {
   getItemById,
   createItem,
   updateItem,
-  deleteItem,
 } = require("../controllers/itemController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -21,6 +21,6 @@ router.post("/", upload.single("cardImage"), protect, createItem);
 
 router.put("/:itemId", upload.single("cardImage"), protect, updateItem);
 
-router.delete("/:itemId", protect, deleteItem);
+router.delete("/:id", protect, deleteRecordMiddleware("item"));
 
 module.exports = router;

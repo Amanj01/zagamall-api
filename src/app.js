@@ -17,6 +17,7 @@ const websiteSocialRoutes = require("./routes/websiteSocialRoutes");
 const formRoutes = require("./routes/formRoutes");
 const roleRoutes = require("./routes/roleRoutes");
 const permissionsRoutes = require("./routes/PermissionRoutes");
+const homeRoutes = require("./routes/homeRoutes");
 
 const extractClientIp = require("./middlewares/clientIpMiddleware");
 
@@ -46,6 +47,7 @@ app.use("/password", passwordResetRoutes); // Password reset routes
 app.use("/form", formRoutes); // Form routes
 app.use("/roles", roleRoutes); // Role routes
 app.use("/permissions", permissionsRoutes); // Permissions routes
+app.use("/home", homeRoutes); // Home routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

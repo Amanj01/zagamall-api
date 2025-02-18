@@ -1,4 +1,5 @@
 const prisma = require("../prisma");
+const { deleteFile } = require("../utils/utility");
 
 // Get a specific blog by ID
 const getBlogById = async (req, res) => {
@@ -30,17 +31,20 @@ const createBlog = async (req, res) => {
         title,
         content,
         showOnHomepage: showOnHomepage === "true",
+        coverImage: `/uploads/${req.files.coverImage[0].filename}`,
       },
     });
 
-    const files = req.files || [];
-    if (files.length > 0) {
+    const gelleryFiles = req.files.gallery || [];
+    if (gelleryFiles.length > 0) {
       await Promise.all(
-        files.map((file) =>
+        gelleryFiles.map((file) =>
           prisma.blogGallery.create({
             data: {
               imagePath: `/uploads/${file.filename}`,
-              blogId: blog.id,
+              blog: {
+                connect: { id: parseInt(blog.id) },
+              },
             },
           })
         )
@@ -67,24 +71,37 @@ const updateBlog = async (req, res) => {
       return res.status(404).json({ message: "Blog not found" });
     }
 
-    const updatedBlog = await prisma.blog.update({
-      where: { id: parseInt(id) },
-      data: {
-        title,
-        content,
-        showOnHomepage: showOnHomepage === "true",
-      },
-    });
+    const newCoverImage = req.files.coverImage[0].filename;
+    const coverImage = newCoverImage
+      ? `/uploads/${newCoverImage}`
+      : existingBlog.coverImage;
+
+    const updatedBlog = await prisma.blog
+      .update({
+        where: { id: parseInt(id) },
+        data: {
+          title,
+          content,
+          showOnHomepage: showOnHomepage === "true",
+          coverImage,
+        },
+      })
+      .then((data) => {
+        if (coverImage) deleteFile(existingBlog.coverImage);
+        return data;
+      });
 
     // Handle image uploads for gallery
-    const files = req.files || [];
-    if (files.length > 0) {
+    const gelleryFiles = req.files.gallery || [];
+    if (gelleryFiles.length > 0) {
       await Promise.all(
-        files.map((file) =>
+        gelleryFiles.map((file) =>
           prisma.blogGallery.create({
             data: {
               imagePath: `/uploads/${file.filename}`,
-              blogId: updatedBlog.id,
+              blog: {
+                connect: { id: parseInt(id) },
+              },
             },
           })
         )
@@ -92,26 +109,6 @@ const updateBlog = async (req, res) => {
     }
 
     res.status(200).json({ message: "Blog updated successfully", updatedBlog });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Delete a blog
-const deleteBlog = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const existingBlog = await prisma.blog.findUnique({
-      where: { id: parseInt(id) },
-    });
-
-    if (!existingBlog) {
-      return res.status(404).json({ message: "Blog not found" });
-    }
-
-    await prisma.blog.delete({ where: { id: parseInt(id) } });
-    res.status(200).json({ message: "Blog deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -132,7 +129,11 @@ const deleteBlogImage = async (req, res) => {
         .json({ message: "Image not found in the gallery" });
     }
 
-    await prisma.blogGallery.delete({ where: { id: parseInt(imageId) } });
+    await prisma.blogGallery
+      .delete({ where: { id: parseInt(imageId) } })
+      .then(() => {
+        if (coverImage) deleteFile(existingImage.imagePath);
+      });
     res.status(200).json({ message: "Image deleted from gallery" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -143,6 +144,5 @@ module.exports = {
   getBlogById,
   createBlog,
   updateBlog,
-  deleteBlog,
   deleteBlogImage,
 };

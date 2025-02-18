@@ -1,3 +1,7 @@
+const fs = require("fs");
+const path = require("path");
+const { getDMMF } = require("@prisma/internals");
+
 const isBeforeHoursAgo = (dateString, hours) => {
   const inputDate = new Date(dateString);
 
@@ -8,4 +12,42 @@ const isBeforeHoursAgo = (dateString, hours) => {
   return inputDate < hoursAgo;
 };
 
-module.exports = { isBeforeHoursAgo };
+const deleteFile = async (filePath) => {
+  const fileToDelete = path.join(__dirname, "../assets", filePath);
+  try {
+    await new Promise((resolve, reject) => {
+      fs.unlink(fileToDelete, (err) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+  } catch (err) {
+    console.error(`Failed to delete file ${fileToDelete}: ${err.message}`);
+  }
+};
+
+async function getRelations(modelName) {
+  const dmmf = await getDMMF({
+    datamodelPath: "./prisma/schema.prisma",
+  });
+
+  const model = dmmf.datamodel.models.find(
+    (m) => m.name.toLocaleLowerCase() === modelName.toLocaleLowerCase()
+  );
+
+  if (!model) {
+    throw new Error(`Model "${modelName}" not found in the schema.`);
+  }
+
+  const includeRelations = {};
+  model.fields
+    .filter((field) => field.relationName)
+    .forEach((field) => {
+      includeRelations[field.name] = true;
+    });
+
+  return includeRelations;
+}
+module.exports = { isBeforeHoursAgo, deleteFile, getRelations };

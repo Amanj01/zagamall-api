@@ -84,7 +84,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user);
-    //emailService.sendNewLoginEmail(user.email, user.username, req.clientIp);
+    emailService.sendNewLoginEmail(user.email, user.username, req.clientIp);
     delete user.password;
     res.status(200).json({ message: "Login successful", token, user });
   } catch (error) {
@@ -203,28 +203,10 @@ const updateUser = async (req, res) => {
   }
 };
 
-// Delete a user (admin-only)
-const deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const user = await prisma.user.findUnique({ where: { id: parseInt(id) } });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    await prisma.user.delete({ where: { id: parseInt(id) } });
-    res.status(200).json({ message: "User deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 module.exports = {
   registerUser,
   loginUser,
   getUserById,
   updateUser,
-  deleteUser,
   me,
 };

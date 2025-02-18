@@ -4,11 +4,11 @@ const {
   getEventById,
   createEvent,
   updateEvent,
-  deleteEvent,
   deleteEventImage,
 } = require("../controllers/eventController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -16,11 +16,26 @@ router.get("/", paginationMiddleware("event"));
 
 router.get("/:id", getEventById);
 
-router.post("/", upload.array("gallery", 10), protect, createEvent);
+router.post(
+  "/",
+  upload.fields([
+    { name: "gallery", maxCount: 10 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  protect,
+  createEvent
+);
+router.put(
+  "/:id",
+  upload.fields([
+    { name: "gallery", maxCount: 10 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  protect,
+  updateEvent
+);
 
-router.put("/:id", upload.array("gallery", 10), protect, updateEvent);
-
-router.delete("/:id", protect, deleteEvent);
+router.delete("/:id", protect, deleteRecordMiddleware("event"));
 
 router.delete("/:id/gallery/:imageId", protect, deleteEventImage);
 

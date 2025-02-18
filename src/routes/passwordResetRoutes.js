@@ -6,7 +6,6 @@ const {
   resetPassword,
   checkRequestToken,
 } = require("../controllers/resetPasswordController");
-const { protect } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 

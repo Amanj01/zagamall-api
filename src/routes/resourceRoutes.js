@@ -3,10 +3,10 @@ const upload = require("../middlewares/uploadMiddleware");
 const {
   getResourceById,
   createResources,
-  deleteResource,
 } = require("../controllers/resourceController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -16,6 +16,6 @@ router.get("/:id", getResourceById);
 
 router.post("/", upload.single("resourceFile"), protect, createResources);
 
-router.delete("/:id", protect, deleteResource);
+router.delete("/:id", protect, deleteRecordMiddleware("resource"));
 
 module.exports = router;

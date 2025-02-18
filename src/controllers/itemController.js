@@ -60,40 +60,25 @@ const updateItem = async (req, res) => {
       return res.status(404).json({ message: "Item not found" });
     }
 
-    const updatedItem = await prisma.item.update({
-      where: { id: parseInt(itemId) },
-      data: {
-        name,
-        description,
-        cardImage: cardImage || existingItem.cardImage,
-        showOnHomepage: showOnHomepage === "true",
-        brand: {
-          connect: { id: parseInt(brandId) },
+    const updatedItem = await prisma.item
+      .update({
+        where: { id: parseInt(itemId) },
+        data: {
+          name,
+          description,
+          cardImage: cardImage || existingItem.cardImage,
+          showOnHomepage: showOnHomepage === "true",
+          brand: {
+            connect: { id: parseInt(brandId) },
+          },
         },
-      },
-    });
+      })
+      .then((data) => {
+        if (cardImage) deleteFile(existingItem.cardImage);
+        return data;
+      });
 
     res.status(200).json(updatedItem);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Delete a specific item for a brand
-const deleteItem = async (req, res) => {
-  try {
-    const { itemId } = req.params;
-
-    const existingItem = await prisma.item.findUnique({
-      where: { id: parseInt(itemId) },
-    });
-
-    if (!existingItem) {
-      return res.status(404).json({ message: "Item not found" });
-    }
-
-    await prisma.item.delete({ where: { id: parseInt(itemId) } });
-    res.status(200).json({ message: "Item deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -103,5 +88,4 @@ module.exports = {
   getItemById,
   createItem,
   updateItem,
-  deleteItem,
 };

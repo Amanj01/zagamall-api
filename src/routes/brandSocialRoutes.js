@@ -3,12 +3,11 @@ const upload = require("../middlewares/uploadMiddleware");
 const { protect } = require("../middlewares/authMiddleware");
 
 const {
-  getBrandSocials,
   createBrandSocial,
   updateBrandSocial,
-  deleteBrandSocial,
 } = require("../controllers/brandSocialController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -24,10 +23,10 @@ router.get(
   paginationMiddleware("brandSocial", ["brandId"])
 );
 
-router.post("/", upload.single("icon"), protect, createBrandSocial);
+router.post("/", upload.single("coverMedia"), protect, createBrandSocial);
 
 router.put("/:socialId", upload.single("icon"), protect, updateBrandSocial);
 
-router.delete("/:socialId", protect, deleteBrandSocial);
+router.delete("/:id", protect, deleteRecordMiddleware("brandSocial"));
 
 module.exports = router;

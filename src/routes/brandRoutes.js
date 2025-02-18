@@ -6,9 +6,9 @@ const {
   getBrandById,
   createBrand,
   updateBrand,
-  deleteBrand,
 } = require("../controllers/brandController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -34,6 +34,6 @@ router.put(
   protect,
   updateBrand
 );
-router.delete("/:id", protect, deleteBrand);
+router.delete("/:id", protect, deleteRecordMiddleware("brand"));
 
 module.exports = router;

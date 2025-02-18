@@ -1,4 +1,5 @@
 const prisma = require("../prisma");
+const { deleteFile } = require("../utils/utility");
 
 // Get all socials for a specific brand
 const getBrandSocials = async (req, res) => {
@@ -53,39 +54,24 @@ const updateBrandSocial = async (req, res) => {
       return res.status(404).json({ message: "Social link not found" });
     }
 
-    const updatedSocial = await prisma.brandSocial.update({
-      where: { id: parseInt(socialId) },
-      data: {
-        name,
-        url,
-        icon: icon || existingSocial.icon,
-        brand: {
-          connect: { id: parseInt(brandId) },
+    const updatedSocial = await prisma.brandSocial
+      .update({
+        where: { id: parseInt(socialId) },
+        data: {
+          name,
+          url,
+          icon: icon || existingSocial.icon,
+          brand: {
+            connect: { id: parseInt(brandId) },
+          },
         },
-      },
-    });
+      })
+      .then((data) => {
+        if (icon) deleteFile(existingSocial.icon);
+        return data;
+      });
 
     res.status(200).json(updatedSocial);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Delete a specific social link for a brand
-const deleteBrandSocial = async (req, res) => {
-  try {
-    const { socialId } = req.params;
-
-    const existingSocial = await prisma.brandSocial.findUnique({
-      where: { id: parseInt(socialId) },
-    });
-
-    if (!existingSocial) {
-      return res.status(404).json({ message: "Social link not found" });
-    }
-
-    await prisma.brandSocial.delete({ where: { id: parseInt(socialId) } });
-    res.status(200).json({ message: "Social link deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -95,5 +81,4 @@ module.exports = {
   getBrandSocials,
   createBrandSocial,
   updateBrandSocial,
-  deleteBrandSocial,
 };

@@ -38,14 +38,19 @@ const updateWebsiteSocial = async (req, res) => {
       return res.status(404).json({ message: "Website social link not found" });
     }
 
-    const updatedSocial = await prisma.websiteSocial.update({
-      where: { id: parseInt(id) },
-      data: {
-        name,
-        url,
-        icon: icon || existingSocial.icon,
-      },
-    });
+    const updatedSocial = await prisma.websiteSocial
+      .update({
+        where: { id: parseInt(id) },
+        data: {
+          name,
+          url,
+          icon: icon || existingSocial.icon,
+        },
+      })
+      .then((data) => {
+        if (icon) deleteFile(existingSocial.icon);
+        return data;
+      });
 
     res.status(200).json({
       message: "Website social link updated successfully",
@@ -56,30 +61,7 @@ const updateWebsiteSocial = async (req, res) => {
   }
 };
 
-// Delete a specific website social link
-const deleteWebsiteSocial = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const existingSocial = await prisma.websiteSocial.findUnique({
-      where: { id: parseInt(id) },
-    });
-
-    if (!existingSocial) {
-      return res.status(404).json({ message: "Website social link not found" });
-    }
-
-    await prisma.websiteSocial.delete({ where: { id: parseInt(id) } });
-    res
-      .status(200)
-      .json({ message: "Website social link deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 module.exports = {
   createWebsiteSocial,
   updateWebsiteSocial,
-  deleteWebsiteSocial,
 };

@@ -34,28 +34,6 @@ const createBrandResources = async (req, res) => {
   }
 };
 
-// Delete a specific resource for a brand
-const deleteBrandResource = async (req, res) => {
-  try {
-    const { resourceId } = req.params;
-
-    const existingResource = await prisma.brandResource.findUnique({
-      where: { id: parseInt(resourceId) },
-    });
-
-    if (!existingResource) {
-      return res.status(404).json({ message: "Resource not found" });
-    }
-
-    await prisma.brandResource.delete({ where: { id: parseInt(resourceId) } });
-
-    res.status(200).json({ message: "Resource deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 module.exports = {
   createBrandResources,
-  deleteBrandResource,
 };

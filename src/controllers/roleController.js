@@ -83,32 +83,8 @@ const updateRole = async (req, res) => {
   }
 };
 
-// Delete a Role
-const deleteRole = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const existingRole = await prisma.role.findUnique({
-      where: { id: parseInt(id) },
-    });
-
-    if (!existingRole) {
-      return res.status(404).json({ message: "Role not found" });
-    }
-
-    await prisma.role.delete({
-      where: { id: parseInt(id) },
-    });
-
-    res.status(200).json({ message: "Role deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
 module.exports = {
   getRoleById,
   createRole,
   updateRole,
-  deleteRole,
 };

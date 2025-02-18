@@ -70,29 +70,9 @@ const getCommentById = async (req, res) => {
     res.status(500).json({ error });
   }
 };
-// Delete a specific comment
-const deleteComment = async (req, res) => {
-  try {
-    const { commentId } = req.params;
-
-    const existingComment = await prisma.comment.findUnique({
-      where: { id: parseInt(commentId) },
-    });
-
-    if (!existingComment) {
-      return res.status(404).json({ message: "Comment not found" });
-    }
-
-    await prisma.comment.delete({ where: { id: parseInt(commentId) } });
-    res.status(200).json({ message: "Comment deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 module.exports = {
   createComment,
   updateComment,
-  deleteComment,
   getCommentById,
 };

@@ -2,11 +2,10 @@ const express = require("express");
 const upload = require("../middlewares/uploadMiddleware");
 const { protect } = require("../middlewares/authMiddleware");
 const {
-  getBrandResources,
   createBrandResources,
-  deleteBrandResource,
 } = require("../controllers/brandResourceController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
@@ -29,6 +28,6 @@ router.post(
   createBrandResources
 );
 
-router.delete("/:resourceId", protect, deleteBrandResource);
+router.delete("/:id", protect, deleteRecordMiddleware("resource"));
 
 module.exports = router;
