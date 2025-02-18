@@ -19,7 +19,7 @@ const registerUser = async (req, res) => {
     }
 
     const existingRole = await prisma.role.findUnique({
-      where: { id: role_id },
+      where: { id: parseInt(role_id) },
     });
 
     if (!existingRole) {
@@ -35,7 +35,7 @@ const registerUser = async (req, res) => {
         password: hashedPassword,
         username,
         role: {
-          connect: { id: role_id },
+          connect: { id: parseInt(role_id) },
         },
       },
     });
@@ -49,7 +49,7 @@ const registerUser = async (req, res) => {
         .status(400)
         .json({ message: "Email or username already exists" });
     }
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error });
   }
 };
 
@@ -165,7 +165,7 @@ const updateUser = async (req, res) => {
 
     if (role_id) {
       const existingRole = await prisma.role.findUnique({
-        where: { id: role_id },
+        where: { id: parseInt(role_id) },
       });
 
       if (!existingRole) {
@@ -179,7 +179,7 @@ const updateUser = async (req, res) => {
         name,
         email,
         username,
-        ...(role_id && { role: { connect: { id: role_id } } }),
+        ...(role_id && { role: { connect: { id: parseInt(role_id) } } }),
         ...(hashedPassword && { password: hashedPassword }),
       },
     });
