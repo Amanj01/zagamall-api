@@ -3,6 +3,7 @@ const prisma = require("../prisma");
 const createContactMessage = async (req, res) => {
   try {
     const { name, email, message } = req.body;
+
     const contactMessage = await prisma.contactMe.create({
       data: {
         name,

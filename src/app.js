@@ -38,7 +38,7 @@ app.use("/brands", brandRoutes); // Brand routes
 app.use("/brands-social", brandSocialRoutes); // Brand Socials routes
 app.use("/comments", commentRoutes); // Comment routes
 app.use("/items", itemRoutes); // Item routes
-app.use("/brand-resources", brandResourceRoutes); // Brand Resource routes
+app.use("/brands-resources", brandResourceRoutes); // Brand Resource routes
 app.use("/resources", resourceRoutes); // Resource routes
 app.use("/blogs", blogRoutes); // Blog routes
 app.use("/events", eventRoutes); // Event routes

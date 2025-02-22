@@ -1,3 +1,17 @@
-node_modules
-# Keep environment variables out of version control
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment variables
 .env
+
+# Build output
+dist/
+build/
+
+# Ignore the uploads folder
+src/assets/uploads/
