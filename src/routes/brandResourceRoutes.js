@@ -21,12 +21,7 @@ router.get(
   paginationMiddleware("brandResource", ["brandId"])
 );
 
-router.post(
-  "/",
-  upload.array("resourceFile", 10),
-  protect,
-  createBrandResources
-);
+router.post("/", upload.single("resourceFile"), protect, createBrandResources);
 
 router.delete("/:id", protect, deleteRecordMiddleware("resource"));
 

@@ -40,10 +40,13 @@ const deleteRecordMiddleware = (modelName) => {
       if (!record) {
         return res.status(404).json({ message: `${modelName} not found` });
       }
+
       Object.keys(include).forEach((key) => {
-        record[key].forEach(async (record) => {
-          await deleteFiles(record);
-        });
+        if (Array.isArray(record[key])) {
+          record[key].forEach(async (record) => {
+            await deleteFiles(record);
+          });
+        }
       });
       await deleteFiles(record);
       await prisma[modelName].delete({ where: { id: parseInt(id) } });

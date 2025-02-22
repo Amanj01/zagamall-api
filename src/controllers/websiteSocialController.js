@@ -1,9 +1,29 @@
 const prisma = require("../prisma");
+const { deleteFile } = require("../utils/utility");
+
+const getWebsiteSocialById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const websiteSocial = await prisma.websiteSocial.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!websiteSocial) {
+      return res.status(404).json({ message: "Website social not found" });
+    }
+
+    res.status(200).json(websiteSocial);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // Add a new website social link
 const createWebsiteSocial = async (req, res) => {
   try {
     const { name, url } = req.body;
+
     const icon = req.file ? `/uploads/${req.file.filename}` : null;
 
     const newSocial = await prisma.websiteSocial.create({
@@ -62,6 +82,7 @@ const updateWebsiteSocial = async (req, res) => {
 };
 
 module.exports = {
+  getWebsiteSocialById,
   createWebsiteSocial,
   updateWebsiteSocial,
 };

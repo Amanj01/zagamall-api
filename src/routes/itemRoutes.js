@@ -7,11 +7,16 @@ const {
 } = require("../controllers/itemController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
-const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
+const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("item"));
+router.get(
+  "/",
+  paginationMiddleware("item", [], {
+    include: { brand: { select: { id: true, name: true } } },
+  })
+);
 
 router.get("/:brandId/items", paginationMiddleware("item", ["brandId"]));
 

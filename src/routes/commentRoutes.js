@@ -27,6 +27,6 @@ router.post("/", upload.none(), protect, createComment);
 
 router.put("/:commentId", upload.none(), protect, updateComment);
 
-router.delete("/:commentId", protect, deleteRecordMiddleware("comment"));
+router.delete("/:id", protect, deleteRecordMiddleware("comment"));
 
 module.exports = router;

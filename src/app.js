@@ -18,6 +18,7 @@ const formRoutes = require("./routes/formRoutes");
 const roleRoutes = require("./routes/roleRoutes");
 const permissionsRoutes = require("./routes/PermissionRoutes");
 const homeRoutes = require("./routes/homeRoutes");
+const contactMeRoutes = require("./routes/contactMeRoutes");
 
 const extractClientIp = require("./middlewares/clientIpMiddleware");
 
@@ -34,7 +35,7 @@ app.use("/uploads", express.static("src/assets/uploads"));
 
 // Register routes
 app.use("/brands", brandRoutes); // Brand routes
-app.use("/brands", brandSocialRoutes); // Brand Socials routes
+app.use("/brands-social", brandSocialRoutes); // Brand Socials routes
 app.use("/comments", commentRoutes); // Comment routes
 app.use("/items", itemRoutes); // Item routes
 app.use("/brand-resources", brandResourceRoutes); // Brand Resource routes
@@ -44,10 +45,11 @@ app.use("/events", eventRoutes); // Event routes
 app.use("/users", userRoutes); // User routes
 app.use("/website-socials", websiteSocialRoutes); // Brand socials routes
 app.use("/password", passwordResetRoutes); // Password reset routes
-app.use("/form", formRoutes); // Form routes
+app.use("/forms", formRoutes); // Form routes
 app.use("/roles", roleRoutes); // Role routes
 app.use("/permissions", permissionsRoutes); // Permissions routes
-app.use("/home", homeRoutes); // Home routes
+app.use("/homes", homeRoutes); // Home routes
+app.use("/contact-me", contactMeRoutes); // Home routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

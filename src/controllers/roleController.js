@@ -38,7 +38,7 @@ const createRole = async (req, res) => {
       data: {
         name,
         permissions: permissions.length
-          ? { connect: permissions.map((id) => ({ id })) }
+          ? { connect: permissions.map((id) => ({ id: parseInt(id) })) }
           : undefined,
       },
     });
@@ -47,7 +47,7 @@ const createRole = async (req, res) => {
       .status(201)
       .json({ message: "Role created successfully", role: newRole });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error });
   }
 };
 
@@ -70,7 +70,7 @@ const updateRole = async (req, res) => {
       data: {
         name,
         permissions: permissions?.length
-          ? { set: permissions.map((id) => ({ id })) }
+          ? { set: permissions.map((id) => ({ id: parseInt(id) })) }
           : undefined,
       },
     });

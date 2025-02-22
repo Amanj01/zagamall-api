@@ -1,19 +1,6 @@
 const prisma = require("../prisma");
 const { deleteFile } = require("../utils/utility");
 
-// Get all socials for a specific brand
-const getBrandSocials = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const socials = await prisma.brandSocial.findMany({
-      where: { brandId: parseInt(id) },
-    });
-    res.status(200).json(socials);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Add a new social link for a specific brand
 const createBrandSocial = async (req, res) => {
   try {
@@ -78,7 +65,6 @@ const updateBrandSocial = async (req, res) => {
 };
 
 module.exports = {
-  getBrandSocials,
   createBrandSocial,
   updateBrandSocial,
 };

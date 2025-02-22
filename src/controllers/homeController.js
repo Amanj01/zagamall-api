@@ -1,4 +1,5 @@
 const prisma = require("../prisma");
+const { deleteFile } = require("../utils/utility");
 
 // Get a specific home by ID
 const getHomeById = async (req, res) => {
@@ -87,6 +88,7 @@ const updateHome = async (req, res) => {
     }
 
     const file = req.file;
+
     let updatedHome;
 
     if (active === "true" && existingHome.active !== true) {

@@ -66,13 +66,17 @@ model Resource {
   title       String
   description String
   filePath    String
+  fileType    String
   createdAt   DateTime @default(now())
 }
 
 // Brand Resources Table
 model BrandResource {
   id        Int    @id @default(autoincrement())
+  title       String
+  description String
   filePath  String
+  fileType    String
   brandId   Int
   brand     Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
   createdAt DateTime @default(now())
@@ -224,4 +228,13 @@ model Home{
   active      Boolean
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+}
+
+model ContactMe {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String
+  message     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

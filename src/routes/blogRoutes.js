@@ -5,7 +5,6 @@ const {
   getBlogById,
   createBlog,
   updateBlog,
-  deleteBlogImage,
 } = require("../controllers/blogController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
 const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
@@ -42,6 +41,6 @@ router.put(
 
 router.delete("/:id", protect, deleteRecordMiddleware("blog"));
 
-router.delete("/:id/gallery/:imageId", protect, deleteBlogImage);
+router.delete("/gallery/:id", protect, deleteRecordMiddleware("blogGallery"));
 
 module.exports = router;

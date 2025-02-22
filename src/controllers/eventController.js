@@ -1,4 +1,5 @@
 const prisma = require("../prisma");
+const { deleteFile } = require("../utils/utility");
 
 // Get a specific event by ID
 const getEventById = async (req, res) => {
@@ -71,12 +72,13 @@ const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const newCoverImage = req.files.coverImage[0].filename;
+    const newCoverImage = req.files.coverImage
+      ? req.files?.coverImage[0].filename
+      : undefined;
     const coverImage = newCoverImage
       ? `/uploads/${newCoverImage}`
       : existingEvent.coverImage;
 
-    if (coverImage) deleteFile(existingEvent.coverImage);
     const updatedEvent = await prisma.event
       .update({
         where: { id: parseInt(id) },
@@ -88,7 +90,7 @@ const updateEvent = async (req, res) => {
         },
       })
       .then((data) => {
-        if (coverImage) deleteFile(existingEvent.coverImage);
+        if (newCoverImage) deleteFile(existingEvent.coverImage);
         return data;
       });
 

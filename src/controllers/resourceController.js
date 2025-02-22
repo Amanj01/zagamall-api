@@ -19,7 +19,6 @@ const getResourceById = async (req, res) => {
   }
 };
 
-// Upload multiple resources
 const createResources = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -30,6 +29,7 @@ const createResources = async (req, res) => {
         title,
         description,
         filePath: `/uploads/${file.filename}`,
+        fileType: file.mimetype,
       },
     });
     res.status(201).json({

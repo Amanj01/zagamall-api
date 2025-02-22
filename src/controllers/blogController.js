@@ -71,7 +71,9 @@ const updateBlog = async (req, res) => {
       return res.status(404).json({ message: "Blog not found" });
     }
 
-    const newCoverImage = req.files.coverImage[0].filename;
+    const newCoverImage = req.files.coverImage
+      ? req.files?.coverImage[0].filename
+      : undefined;
     const coverImage = newCoverImage
       ? `/uploads/${newCoverImage}`
       : existingBlog.coverImage;
@@ -87,7 +89,7 @@ const updateBlog = async (req, res) => {
         },
       })
       .then((data) => {
-        if (coverImage) deleteFile(existingBlog.coverImage);
+        if (newCoverImage) deleteFile(existingBlog.coverImage);
         return data;
       });
 
@@ -114,35 +116,8 @@ const updateBlog = async (req, res) => {
   }
 };
 
-// Delete a specific image from a blog's gallery
-const deleteBlogImage = async (req, res) => {
-  try {
-    const { id, imageId } = req.params;
-
-    const existingImage = await prisma.blogGallery.findUnique({
-      where: { id: parseInt(imageId) },
-    });
-
-    if (!existingImage || existingImage.blogId !== parseInt(id)) {
-      return res
-        .status(404)
-        .json({ message: "Image not found in the gallery" });
-    }
-
-    await prisma.blogGallery
-      .delete({ where: { id: parseInt(imageId) } })
-      .then(() => {
-        if (coverImage) deleteFile(existingImage.imagePath);
-      });
-    res.status(200).json({ message: "Image deleted from gallery" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 module.exports = {
   getBlogById,
   createBlog,
   updateBlog,
-  deleteBlogImage,
 };

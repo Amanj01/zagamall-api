@@ -12,7 +12,12 @@ const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("event"));
+router.get(
+  "/",
+  paginationMiddleware("event", [], {
+    include: { gallery: true },
+  })
+);
 
 router.get("/:id", getEventById);
 
@@ -37,6 +42,6 @@ router.put(
 
 router.delete("/:id", protect, deleteRecordMiddleware("event"));
 
-router.delete("/:id/gallery/:imageId", protect, deleteEventImage);
+router.delete("/gallery/:id", protect, deleteRecordMiddleware("eventGallery"));
 
 module.exports = router;

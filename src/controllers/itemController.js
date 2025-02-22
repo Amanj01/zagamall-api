@@ -3,15 +3,11 @@ const prisma = require("../prisma");
 // Get a single item for a specific brand
 const getItemById = async (req, res) => {
   try {
-    const { brandId, itemId } = req.params;
+    const { itemId } = req.params;
 
     const item = await prisma.item.findUnique({
       where: { id: parseInt(itemId) },
     });
-
-    if (!item || item.brandId !== parseInt(brandId)) {
-      return res.status(404).json({ message: "Item not found" });
-    }
 
     res.status(200).json(item);
   } catch (error) {

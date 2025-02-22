@@ -23,7 +23,7 @@ router.get(
   paginationMiddleware("brandSocial", ["brandId"])
 );
 
-router.post("/", upload.single("coverMedia"), protect, createBrandSocial);
+router.post("/", upload.single("icon"), protect, createBrandSocial);
 
 router.put("/:socialId", upload.single("icon"), protect, updateBrandSocial);
 
