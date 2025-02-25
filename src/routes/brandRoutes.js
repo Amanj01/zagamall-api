@@ -14,6 +14,7 @@ const router = express.Router();
 
 router.get("/", paginationMiddleware("brand"));
 router.get("/:id", getBrandById);
+
 router.post(
   "/",
   upload.fields([

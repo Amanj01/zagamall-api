@@ -34,22 +34,22 @@ app.use(cors());
 app.use("/uploads", express.static("src/assets/uploads"));
 
 // Register routes
-app.use("/brands", brandRoutes); // Brand routes
+app.use("/brands", brandRoutes); // Brand routes  (CLient)
 app.use("/brands-social", brandSocialRoutes); // Brand Socials routes
-app.use("/comments", commentRoutes); // Comment routes
-app.use("/items", itemRoutes); // Item routes
+app.use("/comments", commentRoutes); // Comment routes   (CLient)
+app.use("/items", itemRoutes); // Item routes   (CLient)
 app.use("/brands-resources", brandResourceRoutes); // Brand Resource routes
-app.use("/resources", resourceRoutes); // Resource routes
-app.use("/blogs", blogRoutes); // Blog routes
-app.use("/events", eventRoutes); // Event routes
+app.use("/resources", resourceRoutes); // Resource routes  (CLient)
+app.use("/blogs", blogRoutes); // Blog routes  (CLient)
+app.use("/events", eventRoutes); // Event routes  (CLient)
 app.use("/users", userRoutes); // User routes
-app.use("/website-socials", websiteSocialRoutes); // Brand socials routes
+app.use("/website-socials", websiteSocialRoutes); // Brand socials routes  (CLient)
 app.use("/password", passwordResetRoutes); // Password reset routes
-app.use("/forms", formRoutes); // Form routes
+app.use("/forms", formRoutes); // Form routes  (CLient)
 app.use("/roles", roleRoutes); // Role routes
 app.use("/permissions", permissionsRoutes); // Permissions routes
-app.use("/homes", homeRoutes); // Home routes
-app.use("/contact-me", contactMeRoutes); // Home routes
+app.use("/homes", homeRoutes); // Home routes  (CLient)
+app.use("/contact-me", contactMeRoutes); // Contact-me routes  (CLient)
 
 // Error handling middleware
 app.use((err, req, res, next) => {

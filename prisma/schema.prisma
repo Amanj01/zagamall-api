@@ -224,7 +224,8 @@ model Home{
   id          Int           @id @default(autoincrement())
   title       String
   description String
-  coverMedia  String      
+  coverMedia  String 
+  fileType    String    
   active      Boolean
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
