@@ -5,6 +5,7 @@ const { protect } = require("../middlewares/authMiddleware");
 const {
   createBrandSocial,
   updateBrandSocial,
+  getBrandSocialById,
 } = require("../controllers/brandSocialController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
 const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
@@ -18,10 +19,8 @@ router.get(
     include: { brand: true },
   })
 );
-router.get(
-  "/:brandId/socials",
-  paginationMiddleware("brandSocial", ["brandId"])
-);
+
+router.get("/:id", protect, getBrandSocialById);
 
 router.post("/", upload.single("icon"), protect, createBrandSocial);
 

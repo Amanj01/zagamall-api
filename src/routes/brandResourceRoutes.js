@@ -23,6 +23,6 @@ router.get(
 
 router.post("/", upload.single("resourceFile"), protect, createBrandResources);
 
-router.delete("/:id", protect, deleteRecordMiddleware("resource"));
+router.delete("/:id", protect, deleteRecordMiddleware("brandResource"));
 
 module.exports = router;

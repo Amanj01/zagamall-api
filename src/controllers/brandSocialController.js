@@ -25,11 +25,28 @@ const createBrandSocial = async (req, res) => {
   }
 };
 
+const getBrandSocialById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const brandSocial = await prisma.brandSocial.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!brandSocial) {
+      return res.status(404).json({ message: "Brand social not found" });
+    }
+
+    res.status(200).json(brandSocial);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Update a specific social link for a brand
 const updateBrandSocial = async (req, res) => {
   try {
     const { socialId } = req.params;
-    const { name, url } = req.body;
+    const { name, url, brandId } = req.body;
 
     const icon = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -65,6 +82,7 @@ const updateBrandSocial = async (req, res) => {
 };
 
 module.exports = {
+  getBrandSocialById,
   createBrandSocial,
   updateBrandSocial,
 };

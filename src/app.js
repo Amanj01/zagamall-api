@@ -35,10 +35,10 @@ app.use("/uploads", express.static("src/assets/uploads"));
 
 // Register routes
 app.use("/brands", brandRoutes); // Brand routes  (CLient)
-app.use("/brands-social", brandSocialRoutes); // Brand Socials routes
+app.use("/brand-socials", brandSocialRoutes); // Brand Socials routes
 app.use("/comments", commentRoutes); // Comment routes   (CLient)
 app.use("/items", itemRoutes); // Item routes   (CLient)
-app.use("/brands-resources", brandResourceRoutes); // Brand Resource routes
+app.use("/brand-resources", brandResourceRoutes); // Brand Resource routes
 app.use("/resources", resourceRoutes); // Resource routes  (CLient)
 app.use("/blogs", blogRoutes); // Blog routes  (CLient)
 app.use("/events", eventRoutes); // Event routes  (CLient)

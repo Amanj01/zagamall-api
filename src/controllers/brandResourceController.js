@@ -5,6 +5,7 @@ const createBrandResources = async (req, res) => {
   try {
     const { brandId, title, description } = req.body;
     const file = req.file;
+    console.log("here");
 
     if (!file) {
       return res.status(400).json({ message: "No file uploaded" });
