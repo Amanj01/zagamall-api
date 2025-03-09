@@ -3,24 +3,24 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 
 // Import routes
-const brandRoutes = require("./routes/brandRoutes");
-const brandSocialRoutes = require("./routes/brandSocialRoutes");
-const itemRoutes = require("./routes/itemRoutes");
-const commentRoutes = require("./routes/commentRoutes");
-const brandResourceRoutes = require("./routes/brandResourceRoutes");
-const resourceRoutes = require("./routes/resourceRoutes");
-const blogRoutes = require("./routes/blogRoutes");
-const eventRoutes = require("./routes/eventRoutes");
-const userRoutes = require("./routes/userRoutes");
-const passwordResetRoutes = require("./routes/passwordResetRoutes");
-const websiteSocialRoutes = require("./routes/websiteSocialRoutes");
-const formRoutes = require("./routes/formRoutes");
-const roleRoutes = require("./routes/roleRoutes");
-const permissionsRoutes = require("./routes/PermissionRoutes");
-const homeRoutes = require("./routes/homeRoutes");
-const contactMeRoutes = require("./routes/contactMeRoutes");
+const brandRoutes = require("./src/routes/brandRoutes");
+const brandSocialRoutes = require("./src/routes/brandSocialRoutes");
+const itemRoutes = require("./src/routes/itemRoutes");
+const commentRoutes = require("./src/routes/commentRoutes");
+const brandResourceRoutes = require("./src/routes/brandResourceRoutes");
+const resourceRoutes = require("./src/routes/resourceRoutes");
+const blogRoutes = require("./src/routes/blogRoutes");
+const eventRoutes = require("./src/routes/eventRoutes");
+const userRoutes = require("./src/routes/userRoutes");
+const passwordResetRoutes = require("./src/routes/passwordResetRoutes");
+const websiteSocialRoutes = require("./src/routes/websiteSocialRoutes");
+const formRoutes = require("./src/routes/formRoutes");
+const roleRoutes = require("./src/routes/roleRoutes");
+const permissionsRoutes = require("./src/routes/PermissionRoutes");
+const homeRoutes = require("./src/routes/homeRoutes");
+const contactMeRoutes = require("./src/routes/contactMeRoutes");
 
-const extractClientIp = require("./middlewares/clientIpMiddleware");
+const extractClientIp = require("./src/middlewares/clientIpMiddleware");
 
 dotenv.config();
 
