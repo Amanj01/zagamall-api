@@ -50,9 +50,8 @@ const sendEmail = async (templateName, to, subject, data) => {
 // Send email to multiple users privately (BCC)
 const sendEmailToMultiple = async (templateName, recipients, subject, data) => {
   try {
-    return await sendEmail(templateName, process.env.EMAIL_USER, subject, {
+    return await sendEmail(templateName, recipients, subject, {
       ...data,
-      recipients, // Optional for logging or analytics
     });
   } catch (err) {
     console.error("Error sending email to multiple users:", err);

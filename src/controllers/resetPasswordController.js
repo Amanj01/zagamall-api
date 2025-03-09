@@ -19,7 +19,7 @@ const requestPasswordReset = async (req, res) => {
     emailService.sendResetPasswordEmail(
       user.email,
       user.username,
-      `https://snow.com/resetPassword?token=${token}`
+      `http://localhost:5173/reset-password?token=${token}`
     );
 
     await prisma.passwordTokens.create({
@@ -37,8 +37,7 @@ const requestPasswordReset = async (req, res) => {
 
 const resetPassword = async (req, res) => {
   try {
-    const { password } = req.body;
-    const token = req.query.token;
+    const { password, token } = req.body;
 
     const requestToken = await prisma.passwordTokens.findUnique({
       where: { token },

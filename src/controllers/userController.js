@@ -84,6 +84,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = generateToken(user);
+
     emailService.sendNewLoginEmail(user.email, user.username, req.clientIp);
     delete user.password;
     res.status(200).json({ message: "Login successful", token, user });
