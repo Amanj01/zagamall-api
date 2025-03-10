@@ -79,6 +79,9 @@ const permissions = [
   "update_home",
   "delete_home",
   "view_home",
+
+  "view_contact_me",
+  "delete_contact_me",
 ];
 
 const seedDatabase = async () => {
