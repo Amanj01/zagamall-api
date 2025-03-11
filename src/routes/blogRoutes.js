@@ -7,7 +7,7 @@ const {
   updateBlog,
 } = require("../controllers/blogController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
-const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
+const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 
 const router = express.Router();
 

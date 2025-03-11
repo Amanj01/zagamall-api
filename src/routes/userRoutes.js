@@ -10,7 +10,7 @@ const {
 } = require("../controllers/userController");
 const { protect } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
-const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
+const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 
 const router = express.Router();
 

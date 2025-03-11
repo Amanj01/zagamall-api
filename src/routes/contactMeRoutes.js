@@ -2,7 +2,7 @@ const express = require("express");
 const { protect } = require("../middlewares/authMiddleware");
 
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
-const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
+const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 const { createContactMessage } = require("../controllers/conactMeController");
 const upload = require("../middlewares/uploadMiddleware");
 

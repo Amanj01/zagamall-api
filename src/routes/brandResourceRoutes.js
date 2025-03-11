@@ -5,7 +5,7 @@ const {
   createBrandResources,
 } = require("../controllers/brandResourceController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
-const deleteRecordMiddleware = require("../middlewares/deletemiddleware");
+const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 
 const router = express.Router();
 
