@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
 
 // Import routes
 const brandRoutes = require("./src/routes/brandRoutes");
@@ -31,7 +32,11 @@ app.use(express.json());
 app.use(cors());
 
 // Serve static files
-app.use("/uploads", express.static("src/assets/uploads"));
+//app.use("/uploads", express.static("src/assets/uploads"));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "/src/assets/uploads/"))
+);
 
 // Register routes
 app.use("/brands", brandRoutes); // Brand routes  (CLient)
