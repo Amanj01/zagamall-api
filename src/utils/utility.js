@@ -30,7 +30,7 @@ const deleteFile = async (filePath) => {
 
 async function getRelations(modelName) {
   const dmmf = await getDMMF({
-    datamodelPath: "./prisma/schema.prisma",
+    datamodelPath: path.join(__dirname, "../../prisma/schema.prisma"),
   });
 
   const model = dmmf.datamodel.models.find(

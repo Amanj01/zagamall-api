@@ -31,8 +31,6 @@ app.use(extractClientIp);
 app.use(express.json());
 app.use(cors());
 
-// Serve static files
-//app.use("/uploads", express.static("src/assets/uploads"));
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "/src/assets/uploads/"))
