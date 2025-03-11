@@ -63,6 +63,7 @@ const createHome = async (req, res) => {
         title,
         description,
         coverMedia: `/uploads/${file.filename}`,
+        fileTypes: file.mimetype,
         active: active === "true",
       },
     });
