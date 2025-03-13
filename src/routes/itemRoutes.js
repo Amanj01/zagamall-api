@@ -13,7 +13,7 @@ const router = express.Router();
 
 router.get(
   "/",
-  paginationMiddleware("item", ["showOnHomePage"], {
+  paginationMiddleware("item", ["showOnHomepage"], {
     include: { brand: { select: { id: true, name: true } } },
   })
 );
