@@ -14,7 +14,7 @@ const createForm = async (req, res) => {
             label: field.label,
             type: field.type,
             options: field.options,
-            isRequired: field.isRequired,
+            isRequired: field.isRequired === "true",
           })),
         },
       },
@@ -29,14 +29,16 @@ const createForm = async (req, res) => {
 // Submit a form response
 const submitFormResponse = async (req, res) => {
   try {
-    const { formId } = req.params;
+    const { id } = req.params;
     const fields = req.body;
     const files = req.files || [];
 
     // Create the form response
     const formResponse = await prisma.formResponse.create({
       data: {
-        formId: parseInt(formId),
+        form: {
+          connect: { id: parseInt(id) },
+        },
       },
     });
 
@@ -92,25 +94,6 @@ const getFormById = async (req, res) => {
   }
 };
 
-// Get all responses for a form
-const getFormResponses = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const responses = await prisma.formResponse.findMany({
-      where: { formId: parseInt(id) },
-      include: {
-        responses: true,
-        files: true,
-      },
-    });
-
-    res.status(200).json(responses);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 // Get a specific response by ID
 const getFormResponseById = async (req, res) => {
   try {
@@ -138,6 +121,5 @@ module.exports = {
   createForm,
   submitFormResponse,
   getFormById,
-  getFormResponses,
   getFormResponseById,
 };

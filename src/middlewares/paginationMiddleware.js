@@ -3,7 +3,8 @@ const prisma = require("../prisma");
 const paginationMiddleware = (
   modelName,
   allowedFilters = [],
-  selecters = {}
+  selecters = {},
+  callBackFn = (data) => data
 ) => {
   return async (req, res, next) => {
     try {
@@ -49,7 +50,7 @@ const paginationMiddleware = (
           : undefined;
 
       res.status(200).json({
-        data,
+        data: callBackFn(data),
         meta:
           page && pageSize
             ? {
