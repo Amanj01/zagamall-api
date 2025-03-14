@@ -9,10 +9,16 @@ const {
 } = require("../controllers/brandController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
 const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
+const { comment } = require("../prisma");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("brand"));
+router.get(
+  "/",
+  paginationMiddleware("brand", [], {
+    include: { socials: true, resources: true, items: true, comments: true },
+  })
+);
 router.get("/:id", getBrandById);
 
 router.post(

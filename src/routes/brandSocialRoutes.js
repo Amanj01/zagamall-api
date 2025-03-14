@@ -14,7 +14,6 @@ const router = express.Router();
 
 router.get(
   "/",
-  protect,
   paginationMiddleware("brandSocial", [], {
     include: { brand: true },
   })
