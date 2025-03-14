@@ -33,7 +33,6 @@ const sendEmail = async (templateName, to, subject, data) => {
 
     const emailOptions = {
       from: `"Snow Company" <${process.env.EMAIL_USER}>`,
-      to, // Only show your email in "to" field
       bcc: Array.isArray(to) ? to.join(",") : to, // Recipients hidden in BCC
       subject,
       html: htmlContent,

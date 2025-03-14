@@ -5,21 +5,24 @@ const {
   submitFormResponse,
   getFormById,
   getFormResponseById,
+  sendEmailById,
 } = require("../controllers/formController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
+const { protect } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
 // Get all forms
 router.get(
   "/",
+  protect,
   paginationMiddleware("form", [], {
     include: { responses: true, fields: true },
   })
 );
 
 // Create a new form
-router.post("/", upload.none(), createForm);
+router.post("/", protect, upload.none(), createForm);
 
 // Submit a form response
 router.post("/:id/response", upload.any(), submitFormResponse);
@@ -30,6 +33,7 @@ router.get("/:id", getFormById);
 // Get all responses for a form
 router.get(
   "/:formId/responses",
+  protect,
   paginationMiddleware(
     "formResponse",
     ["formId"],
@@ -48,7 +52,7 @@ router.get(
           fullResponse[field.label] = value;
         });
         files.forEach(({ field, filePath }) => {
-          fullResponse[field.label] = filePath;
+          fullResponse[field.label] = process.env.ASSET_URL + filePath;
         });
         return fullResponse;
       });
@@ -56,7 +60,9 @@ router.get(
   )
 );
 
+router.post("/:id/mail", protect, upload.none(), sendEmailById);
+
 // Get a specific response by ID
-router.get("/:id/responses/:responseId", getFormResponseById);
+router.get("/:id/responses/:responseId", protect, getFormResponseById);
 
 module.exports = router;

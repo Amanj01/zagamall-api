@@ -1,3 +1,4 @@
+const emailService = require("../email/emailService");
 const prisma = require("../prisma");
 
 // Create a new form
@@ -117,9 +118,58 @@ const getFormResponseById = async (req, res) => {
   }
 };
 
+const sendEmailById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subject, content } = req.body;
+
+    const response = await prisma.formResponse.findMany({
+      where: { formId: parseInt(id) },
+      omit: { id: true, formId: true, createdAt: true },
+      include: {
+        responses: {
+          include: {
+            field: { select: { type: true } },
+          },
+        },
+      },
+    });
+
+    if (!response.length) {
+      return res.status(400).json({ message: "There are no responses yet" });
+    }
+
+    const emailList = [];
+
+    response.forEach((resp) => {
+      resp.responses.forEach((r) => {
+        if (r.field?.type === "email" && r.value) {
+          emailList.push(r.value);
+        }
+      });
+    });
+
+    if (!emailList.length) {
+      return res
+        .status(400)
+        .json({ message: "The form does not have an email field" });
+    }
+
+    await emailService.sendEmailToMultipleUsers(emailList, subject, content);
+
+    return res.status(200).json({
+      message: "Emails sent successfully",
+      emails: emailList,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createForm,
   submitFormResponse,
   getFormById,
   getFormResponseById,
+  sendEmailById,
 };
