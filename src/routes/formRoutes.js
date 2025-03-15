@@ -9,6 +9,7 @@ const {
 } = require("../controllers/formController");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
 const { protect } = require("../middlewares/authMiddleware");
+const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 
 const router = express.Router();
 
@@ -64,5 +65,7 @@ router.post("/:id/mail", protect, upload.none(), sendEmailById);
 
 // Get a specific response by ID
 router.get("/:id/responses/:responseId", protect, getFormResponseById);
+
+router.delete("/:id", protect, deleteRecordMiddleware("form"));
 
 module.exports = router;
