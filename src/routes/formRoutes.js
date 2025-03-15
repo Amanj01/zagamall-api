@@ -63,7 +63,6 @@ router.get(
 
 router.post("/:id/mail", protect, upload.none(), sendEmailById);
 
-// Get a specific response by ID
 router.get("/:id/responses/:responseId", protect, getFormResponseById);
 
 router.delete("/:id", protect, deleteRecordMiddleware("form"));

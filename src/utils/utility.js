@@ -28,7 +28,7 @@ const deleteFile = async (filePath) => {
   }
 };
 
-async function getRelations(modelName) {
+/* async function getRelations(modelName) {
   const dmmf = await getDMMF({
     datamodelPath: path.join(__dirname, "../../prisma/schema.prisma"),
   });
@@ -49,5 +49,41 @@ async function getRelations(modelName) {
     });
 
   return includeRelations;
+} */
+
+async function getRelations(modelName, dmmf = null, memo = new Set()) {
+  if (!dmmf) {
+    dmmf = await getDMMF({
+      datamodelPath: path.join(__dirname, "../../prisma/schema.prisma"),
+    });
+  }
+
+  const model = dmmf.datamodel.models.find(
+    (m) => m.name.toLowerCase() === modelName.toLowerCase()
+  );
+
+  if (!model) {
+    throw new Error(`Model "${modelName}" not found in the schema.`);
+  }
+
+  if (memo.has(model.name)) {
+    return true;
+  }
+
+  const includeRelations = {};
+  memo.add(model.name);
+
+  for (const field of model.fields) {
+    if (!field.relationName) continue;
+
+    const nestedInclude = await getRelations(field.type, dmmf, memo);
+
+    includeRelations[field.name] = {
+      include: nestedInclude,
+    };
+  }
+
+  return includeRelations;
 }
+
 module.exports = { isBeforeHoursAgo, deleteFile, getRelations };

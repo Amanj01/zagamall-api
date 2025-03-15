@@ -41,15 +41,27 @@ const deleteRecordMiddleware = (modelName) => {
         return res.status(404).json({ message: `${modelName} not found` });
       }
 
-      Object.keys(include).forEach((key) => {
-        if (Array.isArray(record[key])) {
-          record[key].forEach(async (record) => {
-            await deleteFiles(record);
-          });
+      const walkAndDelete = async (record, include) => {
+        await deleteFiles(record);
+
+        for (const key of Object.keys(include)) {
+          const subInclude = include[key]?.include ?? {};
+          const value = record[key];
+
+          if (Array.isArray(value)) {
+            for (const nested of value) {
+              await walkAndDelete(nested, subInclude);
+            }
+          } else if (typeof value === "object" && value !== null) {
+            await walkAndDelete(value, subInclude);
+          }
         }
-      });
-      await deleteFiles(record);
+      };
+
+      await walkAndDelete(record, include);
+
       await prisma[modelName].delete({ where: { id: parseInt(id) } });
+
       res.status(200).json({ message: `${modelName} deleted successfully` });
     } catch (error) {
       res.status(500).json({ error: error.message });
