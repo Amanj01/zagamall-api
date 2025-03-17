@@ -58,15 +58,35 @@ const createHome = async (req, res) => {
   try {
     const { title, description, active } = req.body;
     const file = req.file;
-    const home = await prisma.home.create({
-      data: {
-        title,
-        description,
-        coverMedia: `/uploads/${file.filename}`,
-        fileType: file.mimetype,
-        active: active === "true",
-      },
-    });
+    let home;
+
+    if (active === "true") {
+      const result = await prisma.$transaction([
+        prisma.home.updateMany({
+          data: { active: false },
+        }),
+        prisma.home.create({
+          data: {
+            title,
+            description,
+            coverMedia: `/uploads/${file.filename}`,
+            fileType: file.mimetype,
+            active: active === "true",
+          },
+        }),
+      ]);
+      home = result[1];
+    } else {
+      home = await prisma.home.create({
+        data: {
+          title,
+          description,
+          coverMedia: `/uploads/${file.filename}`,
+          fileType: file.mimetype,
+          active: active === "true",
+        },
+      });
+    }
 
     res.status(201).json({ message: "home created successfully", home });
   } catch (error) {
@@ -102,6 +122,7 @@ const updateHome = async (req, res) => {
           data: {
             title,
             description,
+            fileType: file ? file.mimetype : existingHome.fileType,
             coverMedia: file
               ? `/uploads/${file.filename}`
               : existingHome.coverMedia,
@@ -116,6 +137,7 @@ const updateHome = async (req, res) => {
         data: {
           title,
           description,
+          fileType: file ? file.mimetype : existingHome.fileType,
           coverMedia: file
             ? `/uploads/${file.filename}`
             : existingHome.coverMedia,
