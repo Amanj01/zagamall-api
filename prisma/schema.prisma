@@ -141,6 +141,8 @@ model WebsiteSocial {
   name      String   // Social platform name
   url       String   // URL
   icon      String   // Icon file path
+  showIcon  Boolean
+  clickable Boolean
   createdAt DateTime @default(now())
 }
 

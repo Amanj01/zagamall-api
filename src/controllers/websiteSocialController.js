@@ -22,7 +22,7 @@ const getWebsiteSocialById = async (req, res) => {
 // Add a new website social link
 const createWebsiteSocial = async (req, res) => {
   try {
-    const { name, url } = req.body;
+    const { name, url, showIcon, clickable } = req.body;
 
     const icon = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -30,6 +30,8 @@ const createWebsiteSocial = async (req, res) => {
       data: {
         name,
         url,
+        showIcon: showIcon === "true",
+        clickable: clickable === "true",
         icon,
       },
     });
@@ -47,7 +49,7 @@ const createWebsiteSocial = async (req, res) => {
 const updateWebsiteSocial = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, url } = req.body;
+    const { name, url, showIcon, clickable } = req.body;
     const icon = req.file ? `/uploads/${req.file.filename}` : null;
 
     const existingSocial = await prisma.websiteSocial.findUnique({
@@ -63,6 +65,8 @@ const updateWebsiteSocial = async (req, res) => {
         where: { id: parseInt(id) },
         data: {
           name,
+          showIcon: showIcon === "true",
+          clickable: clickable === "true",
           url,
           icon: icon || existingSocial.icon,
         },
