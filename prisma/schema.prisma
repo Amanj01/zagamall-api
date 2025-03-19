@@ -55,6 +55,7 @@ model Comment {
   name           String   // Name of the person giving feedback
   review         String   // Feedback content
   showOnHomepage Boolean  @default(false)
+  cardImage      String?
   brandId        Int
   brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
   createdAt      DateTime @default(now())
