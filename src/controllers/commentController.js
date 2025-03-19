@@ -45,7 +45,7 @@ const updateComment = async (req, res) => {
         data: {
           name,
           review,
-          cardImage: cardImage || existingItem.cardImage,
+          cardImage: cardImage || existingComment.cardImage,
           showOnHomepage: showOnHomepage === "true",
           brand: {
             connect: { id: parseInt(brandId) },
@@ -53,7 +53,7 @@ const updateComment = async (req, res) => {
         },
       })
       .then((data) => {
-        if (cardImage) deleteFile(existingItem.cardImage);
+        if (cardImage) deleteFile(existingComment.cardImage);
         return data;
       });
 
