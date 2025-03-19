@@ -1,4 +1,5 @@
 const prisma = require("../prisma");
+const { deleteFile } = require("../utils/utility");
 
 // Add a new comment for a specific brand
 const createComment = async (req, res) => {
