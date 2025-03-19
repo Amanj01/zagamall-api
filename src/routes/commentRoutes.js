@@ -23,9 +23,9 @@ router.get("/:brandId/comments", paginationMiddleware("comment", ["brandId"]));
 
 router.get("/:commentId", protect, getCommentById);
 
-router.post("/", upload.none(), protect, createComment);
+router.post("/", upload.single("cardImage"), protect, createComment);
 
-router.put("/:commentId", upload.none(), protect, updateComment);
+router.put("/:commentId", upload.single("cardImage"), protect, updateComment);
 
 router.delete("/:id", protect, deleteRecordMiddleware("comment"));
 

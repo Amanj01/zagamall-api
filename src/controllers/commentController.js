@@ -4,11 +4,12 @@ const prisma = require("../prisma");
 const createComment = async (req, res) => {
   try {
     const { name, review, showOnHomepage, brandId } = req.body;
-
+    const cardImage = req.file ? `/uploads/${req.file.filename}` : null;
     const newComment = await prisma.comment.create({
       data: {
         name,
         review,
+        cardImage,
         showOnHomepage: showOnHomepage === "true",
         brand: {
           connect: { id: parseInt(brandId) },
@@ -27,6 +28,7 @@ const updateComment = async (req, res) => {
   try {
     const { commentId } = req.params;
     const { name, review, showOnHomepage, brandId } = req.body;
+    const cardImage = req.file ? `/uploads/${req.file.filename}` : null;
 
     const existingComment = await prisma.comment.findUnique({
       where: { id: parseInt(commentId) },
@@ -36,17 +38,23 @@ const updateComment = async (req, res) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    const updatedComment = await prisma.comment.update({
-      where: { id: parseInt(commentId) },
-      data: {
-        name,
-        review,
-        showOnHomepage: showOnHomepage === "true",
-        brand: {
-          connect: { id: parseInt(brandId) },
+    const updatedComment = await prisma.comment
+      .update({
+        where: { id: parseInt(commentId) },
+        data: {
+          name,
+          review,
+          cardImage: cardImage || existingItem.cardImage,
+          showOnHomepage: showOnHomepage === "true",
+          brand: {
+            connect: { id: parseInt(brandId) },
+          },
         },
-      },
-    });
+      })
+      .then((data) => {
+        if (cardImage) deleteFile(existingItem.cardImage);
+        return data;
+      });
 
     res.status(200).json(updatedComment);
   } catch (error) {
