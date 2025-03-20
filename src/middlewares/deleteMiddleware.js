@@ -26,10 +26,10 @@ const deleteFiles = async (record) => {
   }
 };
 
-const deleteRecordMiddleware = (modelName) => {
+const deleteRecordMiddleware = (modelName, isDeepDelete = false) => {
   return async (req, res) => {
     const { id } = req.params;
-    const include = await getRelations(modelName);
+    const include = isDeepDelete ? await getRelations(modelName) : {};
 
     try {
       const record = await prisma[modelName].findUnique({
@@ -58,7 +58,9 @@ const deleteRecordMiddleware = (modelName) => {
         }
       };
 
-      await walkAndDelete(record, include);
+      isDeepDelete
+        ? await walkAndDelete(record, include)
+        : await deleteFiles(record);
 
       await prisma[modelName].delete({ where: { id: parseInt(id) } });
 

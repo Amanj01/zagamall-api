@@ -39,7 +39,7 @@ router.put(
   updateBlog
 );
 
-router.delete("/:id", protect, deleteRecordMiddleware("blog"));
+router.delete("/:id", protect, deleteRecordMiddleware("blog", true));
 
 router.delete("/gallery/:id", protect, deleteRecordMiddleware("blogGallery"));
 

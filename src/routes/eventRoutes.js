@@ -40,7 +40,7 @@ router.put(
   updateEvent
 );
 
-router.delete("/:id", protect, deleteRecordMiddleware("event"));
+router.delete("/:id", protect, deleteRecordMiddleware("event", true));
 
 router.delete("/gallery/:id", protect, deleteRecordMiddleware("eventGallery"));
 

@@ -35,6 +35,6 @@ router.put(
   protect,
   updateBrand
 );
-router.delete("/:id", protect, deleteRecordMiddleware("brand"));
+router.delete("/:id", protect, deleteRecordMiddleware("brand", true));
 
 module.exports = router;

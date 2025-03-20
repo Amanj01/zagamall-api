@@ -65,6 +65,6 @@ router.post("/:id/mail", protect, upload.none(), sendEmailById);
 
 router.get("/:id/responses/:responseId", protect, getFormResponseById);
 
-router.delete("/:id", protect, deleteRecordMiddleware("form"));
+router.delete("/:id", protect, deleteRecordMiddleware("form", true));
 
 module.exports = router;
