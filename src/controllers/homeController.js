@@ -39,6 +39,11 @@ const getHome = async (req, res) => {
       omit: { createdAt: true },
     });
 
+    const blogs = await prisma.blog.findMany({
+      where: { showOnHomepage: true },
+      omit: { createdAt: true },
+    });
+
     const socials = await prisma.websiteSocial.findMany({
       omit: { createdAt: true },
     });
@@ -47,7 +52,7 @@ const getHome = async (req, res) => {
       select: { id: true, name: true, logo: true },
     });
 
-    res.status(200).json({ ...home, brands, comments, items, socials });
+    res.status(200).json({ ...home, brands, comments, items, socials, blogs });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
