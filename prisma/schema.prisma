@@ -161,6 +161,7 @@ model Form {
   description String?
   fields      FormField[]
   responses   FormResponse[]
+  active      Boolean             @default(true)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 }

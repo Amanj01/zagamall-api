@@ -2,6 +2,7 @@ const express = require("express");
 const upload = require("../middlewares/uploadMiddleware");
 const {
   createForm,
+  updateForm,
   submitFormResponse,
   getFormById,
   getFormResponseById,
@@ -24,6 +25,9 @@ router.get(
 
 // Create a new form
 router.post("/", protect, upload.none(), createForm);
+
+// Update a form by ID
+router.put("/:id", protect, upload.none(), updateForm);
 
 // Submit a form response
 router.post("/:id/response", upload.any(), submitFormResponse);

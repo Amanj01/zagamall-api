@@ -79,6 +79,7 @@ const submitFormResponse = async (req, res) => {
 const getFormById = async (req, res) => {
   try {
     const { id } = req.params;
+    const token = req.headers.authorization;
 
     const form = await prisma.form.findUnique({
       where: { id: parseInt(id) },
@@ -87,6 +88,10 @@ const getFormById = async (req, res) => {
 
     if (!form) {
       return res.status(404).json({ message: "Form not found" });
+    }
+
+    if (!form.active && !token) {
+      return res.status(404).json({ message: "Form is not active" });
     }
 
     res.status(200).json(form);
@@ -166,10 +171,92 @@ const sendEmailById = async (req, res) => {
   }
 };
 
+// Update a form by ID
+const updateForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, active, fields } = req.body;
+
+    const existingForm = await prisma.form.findUnique({
+      where: { id: parseInt(id) },
+      include: { fields: true },
+    });
+
+    if (!existingForm) {
+      return res.status(404).json({ message: "Form not found" });
+    }
+
+    await prisma.form.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        description,
+        active: active === "true",
+      },
+    });
+
+    if (fields && Array.isArray(fields)) {
+      const existingFieldIds = existingForm.fields.map((field) =>
+        field.id.toString()
+      );
+
+      const incomingFieldIds = fields
+        .filter(
+          (field) => typeof field?.id !== "undefined" && field.id !== null
+        )
+        .map((field) => field.id.toString());
+
+      const fieldsToDelete = existingFieldIds.filter(
+        (id) => !incomingFieldIds.includes(id)
+      );
+
+      if (fieldsToDelete.length > 0) {
+        await prisma.formField.deleteMany({
+          where: {
+            id: {
+              in: fieldsToDelete.map((id) => parseInt(id)),
+            },
+          },
+        });
+      }
+
+      for (const field of fields) {
+        if (field?.id) {
+          await prisma.formField.update({
+            where: { id: parseInt(field.id) },
+            data: {
+              label: field.label,
+              type: field.type,
+              options: field.options,
+              isRequired: field.isRequired === "true",
+            },
+          });
+        } else {
+          await prisma.formField.create({
+            data: {
+              formId: parseInt(id),
+              label: field.label,
+              type: field.type,
+              options: field.options,
+              isRequired: field.isRequired === "true",
+            },
+          });
+        }
+      }
+    }
+    res.status(200).json({
+      message: "Form updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createForm,
   submitFormResponse,
   getFormById,
   getFormResponseById,
   sendEmailById,
+  updateForm,
 };
