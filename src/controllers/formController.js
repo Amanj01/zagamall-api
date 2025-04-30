@@ -43,10 +43,24 @@ const submitFormResponse = async (req, res) => {
       },
     });
 
+    const form = await prisma.form.findUnique({
+      where: { id: parseInt(id) },
+      include: { fields: true },
+    });
+
+    const emailFieldId = form.fields.find(
+      (field) => field.label == "Email"
+    )?.id;
+
+    let email = "";
+
     // Save non-file responses
     for (const [fieldName, value] of Object.entries(fields)) {
       const fieldId = parseInt(fieldName.split("_")[1]);
 
+      if (fieldId === emailFieldId) {
+        email = value;
+      }
       await prisma.formResponseData.create({
         data: {
           fieldId,
@@ -68,7 +82,7 @@ const submitFormResponse = async (req, res) => {
         },
       });
     }
-
+    await emailService.sendFormSubmittedEmail(email, "");
     res.status(201).json({ message: "Form response submitted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -160,7 +174,12 @@ const sendEmailById = async (req, res) => {
         .json({ message: "The form does not have an email field" });
     }
 
-    await emailService.sendEmailToMultipleUsers(emailList, subject, content);
+    // Split email list into chunks of 50 and send emails in batches
+    const chunkSize = 50;
+    for (let i = 0; i < emailList.length; i += chunkSize) {
+      const emailChunk = emailList.slice(i, i + chunkSize);
+      await emailService.sendEmailToMultipleUsers(emailChunk, subject, content);
+    }
 
     return res.status(200).json({
       message: "Emails sent successfully",

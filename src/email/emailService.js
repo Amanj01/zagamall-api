@@ -6,7 +6,9 @@ const geoip = require("geoip-lite"); // To resolve IP location
 require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.zoho.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD,
@@ -31,9 +33,13 @@ const sendEmail = async (templateName, to, subject, data) => {
     );
     const htmlContent = await ejs.renderFile(baseTemplatePath, { content });
 
+    const cleanEmails = Array.isArray(to)
+      ? to.map((e) => e.trim())
+      : [to.trim()];
+
     const emailOptions = {
       from: `"Snow Company" <${process.env.EMAIL_USER}>`,
-      bcc: Array.isArray(to) ? to.join(",") : to, // Recipients hidden in BCC
+      bcc: cleanEmails,
       subject,
       html: htmlContent,
     };
