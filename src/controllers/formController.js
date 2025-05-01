@@ -56,8 +56,11 @@ const submitFormResponse = async (req, res) => {
     // Save non-file responses
     for (const [fieldName, value] of Object.entries(fields)) {
       const fieldId = parseInt(fieldName.split("_")[1]);
+      console.log("up");
 
       if (fieldId === emailFieldId) {
+        console.log("here");
+
         email = value;
       }
       await prisma.formResponseData.create({
