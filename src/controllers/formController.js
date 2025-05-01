@@ -47,20 +47,14 @@ const submitFormResponse = async (req, res) => {
       include: { fields: true },
     });
 
-    const emailFieldId = form.fields.find(
-      (field) => field.label == "Email"
-    )?.id;
+    const emailFieldId = form.fields.find((field) => field.type == "email")?.id;
 
     let email = "";
 
     // Save non-file responses
     for (const [fieldName, value] of Object.entries(fields)) {
       const fieldId = parseInt(fieldName.split("_")[1]);
-      console.log("up");
-
-      if (fieldId === emailFieldId) {
-        console.log("here");
-
+      if (fieldId == emailFieldId) {
         email = value;
       }
       await prisma.formResponseData.create({
@@ -85,9 +79,9 @@ const submitFormResponse = async (req, res) => {
       });
     }
 
-    console.log(email);
-
-    await emailService.sendFormSubmittedEmail(email, "");
+    if (email) {
+      await emailService.sendFormSubmittedEmail(email, "");
+    }
     res.status(201).json({ message: "Form response submitted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
