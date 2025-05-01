@@ -80,7 +80,9 @@ const submitFormResponse = async (req, res) => {
     }
 
     if (email) {
-      await emailService.sendFormSubmittedEmail(email, "");
+      await emailService.sendFormSubmittedEmail(email, "").catch((err) => {
+        console.error("Error sending email:", err);
+      });
     }
     res.status(201).json({ message: "Form response submitted successfully" });
   } catch (error) {
