@@ -34,7 +34,6 @@ const submitFormResponse = async (req, res) => {
     const fields = req.body;
     const files = req.files || [];
 
-    // Create the form response
     const formResponse = await prisma.formResponse.create({
       data: {
         form: {
@@ -82,6 +81,9 @@ const submitFormResponse = async (req, res) => {
         },
       });
     }
+
+    console.log(email);
+
     await emailService.sendFormSubmittedEmail(email, "");
     res.status(201).json({ message: "Form response submitted successfully" });
   } catch (error) {
