@@ -24,19 +24,38 @@ const getEventById = async (req, res) => {
 // Create a new event
 const createEvent = async (req, res) => {
   try {
-    const { title, content, showOnHomepage } = req.body;
+    const { title, content, showOnHomepage, coverImage } = req.body;
+    
+    // Validate title is provided
+    if (!title) {
+      return res.status(400).json({ error: "Title is required" });
+    }
+    
+    let eventCoverImage;
+    
+    // Check if cover image is provided as a file upload
+    if (req.files && req.files.coverImage && req.files.coverImage[0]) {
+      eventCoverImage = `/uploads/${req.files.coverImage[0].filename}`;
+    } 
+    // Check if cover image is provided as a URL in the request body
+    else if (coverImage) {
+      eventCoverImage = coverImage;
+    } else {
+      // No cover image provided
+      return res.status(400).json({ error: "Cover image is required" });
+    }
 
     const event = await prisma.event.create({
       data: {
-        title,
-        content,
+        title: String(title),
+        content: content || "",
         showOnHomepage: showOnHomepage === "true",
-        coverImage: `/uploads/${req.files.coverImage[0].filename}`,
+        coverImage: eventCoverImage,
       },
     });
 
     // Handle image uploads for gallery
-    const gelleryFiles = req.files.gallery || [];
+    const gelleryFiles = req.files?.gallery || [];
     if (gelleryFiles.length > 0) {
       await Promise.all(
         gelleryFiles.map((file) =>
@@ -72,8 +91,8 @@ const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const newCoverImage = req.files.coverImage
-      ? req.files?.coverImage[0].filename
+    const newCoverImage = req.files && req.files.coverImage && req.files.coverImage[0]
+      ? req.files.coverImage[0].filename
       : undefined;
     const coverImage = newCoverImage
       ? `/uploads/${newCoverImage}`
@@ -95,7 +114,7 @@ const updateEvent = async (req, res) => {
       });
 
     // Handle image uploads for gallery
-    const gelleryFiles = req.files.gallery || [];
+    const gelleryFiles = req.files?.gallery || [];
     if (gelleryFiles.length > 0) {
       await Promise.all(
         gelleryFiles.map((file) =>
