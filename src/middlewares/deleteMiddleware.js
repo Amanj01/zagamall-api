@@ -10,7 +10,7 @@ const deleteFiles = async (record) => {
   );
 
   for (const field of fileFields) {
-    const filePath = path.join(__dirname, "../assets", record[field]);
+    const filePath = path.join(__dirname, "../../", record[field]);
     try {
       await new Promise((resolve, reject) => {
         fs.unlink(filePath, (err) => {

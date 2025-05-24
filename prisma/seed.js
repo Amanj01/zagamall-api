@@ -118,18 +118,18 @@ const seedDatabase = async () => {
     console.log("✅ Admin role seeded!");
 
     // Hash password for user
-    const hashedPassword = await bcrypt.hash("kurd2003", 10);
+    const hashedPassword = await bcrypt.hash("amanj2025", 10);
 
     // Create the Admin user
     console.log("🌱 Seeding Admin user...");
 
     await prisma.user.upsert({
-      where: { email: "mwhaemnluqman2@gmail.com" },
+      where: { email: "amangshkurxdr@gmail.com" },
       update: {},
       create: {
-        name: "muhaemn",
-        username: "muhaemn",
-        email: "mwhaemnluqman2@gmail.com",
+        name: "Amanj",
+        username: "Amanj01",
+        email: "amangshkurxdr@gmail.com",
         password: hashedPassword, // Hashed password
         role: { connect: { id: adminRole.id } }, // Assign Admin role
       },

@@ -14,7 +14,8 @@ const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 
 const router = express.Router();
 
-router.post("/", upload.none(), registerUser);
+// Register a new user (only admins can create new users)
+router.post("/register", upload.none(), protect, registerUser);
 
 router.post("/login", upload.none(), loginUser);
 

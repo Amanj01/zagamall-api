@@ -5,15 +5,45 @@ const geoip = require("geoip-lite"); // To resolve IP location
 
 require("dotenv").config();
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.zoho.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+// Check if email settings are configured
+const isEmailConfigured =
+  process.env.EMAIL_USER &&
+  process.env.EMAIL_USER !== "your_email@zoho.com" &&
+  process.env.EMAIL_PASSWORD &&
+  process.env.EMAIL_PASSWORD !== "your_email_app_password";
+
+// Create transporter only if credentials are configured
+const createTransporter = () => {
+  if (!isEmailConfigured) {
+    console.log("Email not configured - using mock transport");
+    return {
+      sendMail: async (options) => {
+        console.log("MOCK EMAIL SENT:", {
+          to: options.bcc || options.to,
+          subject: options.subject,
+          // Log first 100 chars of email content for debugging
+          contentPreview:
+            options.html && options.html.length > 100
+              ? options.html.substring(0, 100) + "..."
+              : options.html || "[No content]",
+        });
+        return { messageId: "mock-email-id" };
+      },
+    };
+  }
+
+  return nodemailer.createTransport({
+    host: "smtp.zoho.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+};
+
+const transporter = createTransporter();
 
 const sendEmail = async (templateName, to, subject, data) => {
   try {
@@ -38,17 +68,24 @@ const sendEmail = async (templateName, to, subject, data) => {
       : [to.trim()];
 
     const emailOptions = {
-      from: `"Snow Company" <${process.env.EMAIL_USER}>`,
+      from: `"Zaga Mall" <${process.env.EMAIL_USER || "noreply@example.com"}>`,
       bcc: cleanEmails,
       subject,
       html: htmlContent,
     };
 
-    const info = await transporter.sendMail(emailOptions);
-    return info;
+    try {
+      const info = await transporter.sendMail(emailOptions);
+      return info;
+    } catch (emailError) {
+      console.error("Error sending email:", emailError.message);
+      // Don't throw the error, just log it - prevents app crash
+      return { error: emailError.message, sent: false };
+    }
   } catch (err) {
-    console.error("Error sending email:", err);
-    throw err;
+    console.error("Error preparing email:", err.message);
+    // Don't throw the error, just log it - prevents app crash
+    return { error: err.message, sent: false };
   }
 };
 

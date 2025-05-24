@@ -4,22 +4,22 @@ const cors = require("cors");
 const path = require("path");
 
 // Import routes
-const brandRoutes = require("./src/routes/brandRoutes");
-const brandSocialRoutes = require("./src/routes/brandSocialRoutes");
-const itemRoutes = require("./src/routes/itemRoutes");
-const commentRoutes = require("./src/routes/commentRoutes");
-const brandResourceRoutes = require("./src/routes/brandResourceRoutes");
-const resourceRoutes = require("./src/routes/resourceRoutes");
-const blogRoutes = require("./src/routes/blogRoutes");
+
 const eventRoutes = require("./src/routes/eventRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const passwordResetRoutes = require("./src/routes/passwordResetRoutes");
-const websiteSocialRoutes = require("./src/routes/websiteSocialRoutes");
-const formRoutes = require("./src/routes/formRoutes");
 const roleRoutes = require("./src/routes/roleRoutes");
 const permissionsRoutes = require("./src/routes/PermissionRoutes");
-const homeRoutes = require("./src/routes/homeRoutes");
-const contactMeRoutes = require("./src/routes/contactMeRoutes");
+
+// Import new Zaga Mall routes
+const storeRoutes = require("./src/routes/storeRoutes");
+const diningRoutes = require("./src/routes/diningRoutes");
+const promotionRoutes = require("./src/routes/promotionRoutes");
+const aboutRoutes = require("./src/routes/aboutRoutes");
+const teamMemberRoutes = require("./src/routes/teamMemberRoutes");
+const faqRoutes = require("./src/routes/faqRoutes");
+const contactInquiryRoutes = require("./src/routes/contactInquiryRoutes");
+const homeSettingRoutes = require("./src/routes/homeSettingRoutes");
 
 const extractClientIp = require("./src/middlewares/clientIpMiddleware");
 
@@ -33,27 +33,28 @@ app.use(cors());
 
 app.use(
   "/uploads",
-  express.static(path.join(__dirname, "/src/assets/uploads/"))
+  express.static(path.join(__dirname, "/uploads/"))
 );
 app.use("/images", express.static(path.join(__dirname, "/src/assets/images/")));
 
 // Register routes
-app.use("/brands", brandRoutes); // Brand routes  (CLient)
-app.use("/brand-socials", brandSocialRoutes); // Brand Socials routes
-app.use("/comments", commentRoutes); // Comment routes   (CLient)
-app.use("/items", itemRoutes); // Item routes   (CLient)
-app.use("/brand-resources", brandResourceRoutes); // Brand Resource routes
-app.use("/resources", resourceRoutes); // Resource routes  (CLient)
-app.use("/blogs", blogRoutes); // Blog routes  (CLient)
-app.use("/events", eventRoutes); // Event routes  (CLient)
+
 app.use("/users", userRoutes); // User routes
-app.use("/website-socials", websiteSocialRoutes); // Brand socials routes  (CLient)
-app.use("/password", passwordResetRoutes); // Password reset routes
-app.use("/forms", formRoutes); // Form routes  (CLient)
-app.use("/roles", roleRoutes); // Role routes
+ app.use("/password", passwordResetRoutes); // Password reset routes
+ app.use("/roles", roleRoutes); // Role routes
 app.use("/permissions", permissionsRoutes); // Permissions routes
-app.use("/homes", homeRoutes); // Home routes  (CLient)
-app.use("/contact-me", contactMeRoutes); // Contact-me routes  (CLient)
+
+// Register new Zaga Mall routes.
+app.use("/api/stores", storeRoutes);
+app.use("/api/dining", diningRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/promotions", promotionRoutes);
+app.use("/api/about", aboutRoutes);
+app.use("/api/team-members", teamMemberRoutes);
+app.use("/api/faqs", faqRoutes);
+app.use("/api/contact", contactInquiryRoutes);
+app.use("/api/home", homeSettingRoutes);
+app.use("/api/auth", userRoutes); // Using existing userRoutes for auth
 
 // Error handling middleware
 app.use((err, req, res, next) => {

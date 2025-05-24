@@ -9,99 +9,6 @@ datasource db {
   url      = env("DATABASE_URL") // Reads database connection string from .env
 }
 
-// Brand Table
-model Brand {
-  id              Int           @id @default(autoincrement()) // Primary Key
-  name            String
-  description     String
-  cardImage       String
-  heroImage       String
-  logo            String
-  showOnHomepage  Boolean       @default(false) // Boolean flag for homepage visibility
-  socials         BrandSocial[] // Relation to BrandSocial
-  items           Item[]        // Relation to Item
-  comments        Comment[]     // Relation to Comment
-  resources       BrandResource[] // Relation to BrandResource
-  createdAt       DateTime      @default(now())  // Auto-set timestamp
-  updatedAt       DateTime      @updatedAt       // Auto-update timestamp
-}
-
-// BrandSocial Table
-model BrandSocial {
-  id        Int    @id @default(autoincrement())
-  name      String // Social platform name
-  url       String // URL of the social platform
-  icon      String // Icon file path
-  brandId   Int
-  brand     Brand  @relation(fields: [brandId], references: [id] , onDelete: Cascade,onUpdate: Cascade) // Foreign Key
-  createdAt DateTime @default(now())
-}
-
-// Item Table
-model Item {
-  id             Int      @id @default(autoincrement())
-  name           String
-  cardImage      String
-  description    String
-  showOnHomepage Boolean  @default(false)
-  brandId        Int
-  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
-  createdAt      DateTime @default(now())
-}
-
-// Comment Table
-model Comment {
-  id             Int      @id @default(autoincrement())
-  name           String   // Name of the person giving feedback
-  review         String   // Feedback content
-  showOnHomepage Boolean  @default(false)
-  cardImage      String?
-  brandId        Int
-  brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
-  createdAt      DateTime @default(now())
-}
-
-// General Resource Table
-model Resource {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  filePath    String
-  fileType    String
-  createdAt   DateTime @default(now())
-}
-
-// Brand Resources Table
-model BrandResource {
-  id        Int    @id @default(autoincrement())
-  title       String
-  description String
-  filePath  String
-  fileType    String
-  brandId   Int
-  brand     Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
-  createdAt DateTime @default(now())
-}
-
-// Blog Table
-model Blog {
-  id             Int      @id @default(autoincrement())
-  title          String
-  content        String   // Blog content
-  coverImage     String   // Cover image file path
-  showOnHomepage Boolean  @default(false)
-  gallery        BlogGallery[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-// Blog Gallery Table
-model BlogGallery {
-  id       Int    @id @default(autoincrement())
-  imagePath String
-  blogId   Int
-  blog     Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
-}
 
 // Event Table
 model Event {
@@ -136,16 +43,6 @@ model User {
   role Role? @relation(fields: [role_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
 }
 
-// Website Socials Table
-model WebsiteSocial {
-  id        Int      @id @default(autoincrement())
-  name      String   // Social platform name
-  url       String   // URL
-  icon      String   // Icon file path
-  showIcon  Boolean
-  clickable Boolean
-  createdAt DateTime @default(now())
-}
 
 // Reset password tokens Table
 model PasswordTokens {
@@ -154,59 +51,7 @@ model PasswordTokens {
   createdAt DateTime @default(now())
 }
 
-// Dynamic Form Tables
-model Form {
-  id          Int                 @id @default(autoincrement())
-  name        String
-  description String?
-  fields      FormField[]
-  responses   FormResponse[]
-  active      Boolean             @default(true)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-}
 
-model FormField {
-  id          Int           @id @default(autoincrement())
-  label       String
-  type        String        
-  options     Json?         
-  isRequired  Boolean       @default(false)
-  formId      Int
-  form        Form          @relation(fields: [formId], references: [id], onDelete: Cascade,onUpdate: Cascade)
-  responses   FormResponseData[]
-  files       FormResponseFile[]
-  createdAt   DateTime      @default(now())
-}
-
-model FormResponse {
-  id          Int                 @id @default(autoincrement())
-  formId      Int
-  form        Form                @relation(fields: [formId], references: [id], onDelete: Cascade,onUpdate: Cascade)
-  responses   FormResponseData[]
-  files       FormResponseFile[]
-  createdAt   DateTime            @default(now())
-}
-
-model FormResponseData {
-  id          Int           @id @default(autoincrement())
-  fieldId     Int
-  field       FormField     @relation(fields: [fieldId], references: [id], onDelete: Cascade,onUpdate: Cascade)
-  value       String        
-  responseId  Int
-  response    FormResponse  @relation(fields: [responseId], references: [id], onDelete: Cascade,onUpdate: Cascade)
-  createdAt   DateTime      @default(now())
-}
-
-model FormResponseFile {
-  id          Int           @id @default(autoincrement())
-  fieldId     Int
-  field       FormField     @relation(fields: [fieldId], references: [id], onDelete: Cascade,onUpdate: Cascade)
-  filePath    String        
-  responseId  Int
-  response    FormResponse  @relation(fields: [responseId], references: [id], onDelete: Cascade,onUpdate: Cascade)
-  createdAt   DateTime      @default(now())
-}
 
 model Permissions {
   id          Int           @id @default(autoincrement())
@@ -224,16 +69,7 @@ model Role{
   User User[]
 }
 
-model Home{
-  id          Int           @id @default(autoincrement())
-  title       String
-  description String
-  coverMedia  String 
-  fileType    String    
-  active      Boolean
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-}
+
 
 model ContactMe {
   id          Int       @id @default(autoincrement())
@@ -242,4 +78,93 @@ model ContactMe {
   message     String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// Zaga Mall models
+model Store {
+  id          Int      @id @default(autoincrement())
+  name        String
+  category    String
+  location    String
+  description String   @db.Text
+  imagePath   String?
+  isShowInHome Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Dining {
+  id          Int      @id @default(autoincrement())
+  name        String
+  category    String
+  location    String
+  description String   @db.Text
+  hours       String?
+  rating      Float?
+  imagePath   String?
+  isShowInHome Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Promotion {
+  id          Int      @id @default(autoincrement())
+  title       String
+  period      String?
+  stores      String?
+  description String   @db.Text
+  imagePath   String?
+  isShowInHome Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AboutSection {
+  id          Int      @id @default(autoincrement())
+  sectionName String   @unique
+  content     String   @db.Text
+  imagePath   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TeamMember {
+  id        Int      @id @default(autoincrement())
+  name      String
+  position  String
+  bio       String   @db.Text
+  imagePath String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FAQ {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String   @db.Text
+  category  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactInquiry {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HomeSetting {
+  id              Int      @id @default(autoincrement())
+  heroTitle       String?
+  heroSubtitle    String?
+  heroImage       String?
+  quickInfoTitle  String?
+  quickInfoContent String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

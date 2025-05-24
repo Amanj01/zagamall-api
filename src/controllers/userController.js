@@ -6,50 +6,65 @@ const emailService = require("../email/emailService");
 // Register a new user
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, username, role_id } = req.body;
+    const { name, email, username, password, role_id } = req.body;
 
-    const existingUser = await prisma.user.findFirst({
-      where: { OR: [{ email }, { username }] },
-    });
-
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "Email or username already exists" });
+    // Validate required fields
+    if (!name || !email || !username || !password || !role_id) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        required: ["name", "email", "username", "password", "role_id"],
+      });
     }
 
-    const existingRole = await prisma.role.findUnique({
-      where: { id: parseInt(role_id) },
+    // Check if email already exists
+    const emailExists = await prisma.user.findUnique({
+      where: { email },
     });
 
-    if (!existingRole) {
-      return res.status(400).json({ message: "Invalid role ID" });
+    if (emailExists) {
+      return res.status(400).json({ message: "Email already in use" });
     }
 
+    // Check if username already exists
+    const usernameExists = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (usernameExists) {
+      return res.status(400).json({ message: "Username already in use" });
+    }
+
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await prisma.user.create({
+    // Create the user
+    const newUser = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword,
         username,
+        password: hashedPassword,
+        role_id: parseInt(role_id),
+      },
+      include: {
         role: {
-          connect: { id: parseInt(role_id) },
+          include: {
+            permissions: true,
+          },
         },
       },
     });
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = newUser;
+
     res.status(201).json({
       message: "User registered successfully",
+      user: userWithoutPassword,
     });
   } catch (error) {
-    if (error.code === "P2002") {
-      return res
-        .status(400)
-        .json({ message: "Email or username already exists" });
-    }
-    res.status(500).json({ error });
+    console.error("Registration error:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -57,6 +72,8 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    console.log("Login attempt:", req.body);
 
     // Find the user by email
     const user = await prisma.user.findUnique({
