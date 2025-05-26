@@ -1,22 +1,25 @@
 const express = require("express");
 const upload = require("../middlewares/uploadMiddleware");
 const { protect } = require("../middlewares/authMiddleware");
-const paginationMiddleware = require("../middlewares/paginationMiddleware");
 const { 
-  getAllAboutSections,
-  getAboutSection, 
-  updateAboutSection,
-  createAboutSection,
-  deleteAboutSection 
+  getAbout,
+  createAbout,
+  updateAbout, 
+  deleteAbout
 } = require("../controllers/aboutController");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("about")); 
-router.get("/all", getAllAboutSections);
-router.get("/:section", getAboutSection);
-router.post("/", upload.single("image"), protect, createAboutSection);
-router.put("/:section", upload.single("image"), protect, updateAboutSection);
-router.delete("/:section", protect, deleteAboutSection);
+// GET /api/about - Get about information
+router.get("/", getAbout);
+
+// POST /api/about - Create about information (protected, with image upload)
+router.post("/", upload.single("image"), protect, createAbout);
+
+// PUT /api/about - Update about information (protected, with image upload)
+router.put("/", upload.single("image"), protect, updateAbout);
+
+// DELETE /api/about - Delete about information (protected)
+router.delete("/", protect, deleteAbout);
 
 module.exports = router;

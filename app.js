@@ -51,7 +51,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/promotions", promotionRoutes);
 app.use("/api/about", aboutRoutes);
 app.use("/api/team-members", teamMemberRoutes);
-app.use("/api/faqs", faqRoutes);
+app.use("/api/faq", faqRoutes); // Changed from /api/faqs to /api/faq
 app.use("/api/contact", contactInquiryRoutes);
 app.use("/api/home", homeSettingRoutes);
 app.use("/api/auth", userRoutes); // Using existing userRoutes for auth

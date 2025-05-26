@@ -7,16 +7,16 @@ const {
   getAllFaqs,
   getFaqById, 
   createFaq, 
-  updateFaq 
+  updateFaq, 
+  deleteFaq
 } = require("../controllers/faqController");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("faq", ["category"]));
-router.get("/all", getAllFaqs);
+router.get("/", getAllFaqs);
 router.get("/:id", getFaqById);
-router.post("/", upload.none(), protect, createFaq);
-router.put("/:id", upload.none(), protect, updateFaq);
-router.delete("/:id", protect, deleteRecordMiddleware("faq"));
+router.post("/", createFaq);
+router.put("/:id", updateFaq);
+router.delete("/:id", deleteFaq);
 
 module.exports = router;
