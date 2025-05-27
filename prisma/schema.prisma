@@ -5,29 +5,28 @@ generator client {
 
 // Datasource Configuration
 datasource db {
-  provider = "mysql"           // Change to "postgresql" if you're using PostgreSQL
+  provider = "postgres" // Change to "postgresql" if you're using PostgreSQL
   url      = env("DATABASE_URL") // Reads database connection string from .env
 }
 
-
 // Event Table
 model Event {
-  id             Int      @id @default(autoincrement())
+  id             Int            @id @default(autoincrement())
   title          String
   content        String
   coverImage     String
-  showOnHomepage Boolean  @default(false)
+  showOnHomepage Boolean        @default(false)
   gallery        EventGallery[]
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 // Event Gallery Table
 model EventGallery {
-  id       Int    @id @default(autoincrement())
+  id        Int    @id @default(autoincrement())
   imagePath String
-  eventId  Int
-  event    Event  @relation(fields: [eventId], references: [id], onDelete: Cascade,onUpdate: Cascade) // Foreign Key
+  eventId   Int
+  event     Event  @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Foreign Key
 }
 
 // User Table
@@ -35,99 +34,95 @@ model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique // Unique email for each user
-  password  String   // Hashed password
+  password  String // Hashed password
   username  String   @unique // Unique username
-  role_id    Int
+  role_id   Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  role Role? @relation(fields: [role_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
+  role      Role?    @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
-
 
 // Reset password tokens Table
 model PasswordTokens {
   id        Int      @id @default(autoincrement())
-  token      String  @unique
+  token     String   @unique
   createdAt DateTime @default(now())
 }
 
-
-
 model Permissions {
-  id          Int           @id @default(autoincrement())
-  name        String        @unique
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  Role Role[]
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Role      Role[]
 }
-model Role{
+
+model Role {
   id          Int           @id @default(autoincrement())
   name        String        @unique
   permissions Permissions[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-  User User[]
+  User        User[]
 }
 
-
-
 model ContactMe {
-  id          Int       @id @default(autoincrement())
-  name        String
-  email       String
-  message     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Zaga Mall models
 model Store {
-  id          Int      @id @default(autoincrement())
-  name        String
-  category    String
-  location    String
-  description String   @db.Text
-  imagePath   String?
+  id           Int      @id @default(autoincrement())
+  name         String
+  category     String
+  location     String
+  description  String   @db.Text
+  imagePath    String?
   isShowInHome Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Dining {
-  id          Int      @id @default(autoincrement())
-  name        String
-  category    String
-  location    String
-  description String   @db.Text
-  hours       String?
-  rating      Float?
-  imagePath   String?
+  id           Int      @id @default(autoincrement())
+  name         String
+  category     String
+  location     String
+  description  String   @db.Text
+  hours        String?
+  rating       Float?
+  imagePath    String?
   isShowInHome Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Promotion {
-  id          Int      @id @default(autoincrement())
-  title       String
-  period      String?
-  stores      String?
-  description String   @db.Text
-  imagePath   String?
+  id           Int      @id @default(autoincrement())
+  title        String
+  period       String?
+  stores       String?
+  description  String   @db.Text
+  imagePath    String?
   isShowInHome Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model About {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String   @db.Text
-  image       String?
-  ourValues   OurValue[]
+  id              Int             @id @default(autoincrement())
+  title           String
+  description     String          @db.Text
+  image           String?
+  ourValues       OurValue[]
   factsAndFigures FactAndFigure[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }
 
 model OurValue {
