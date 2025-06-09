@@ -5,6 +5,11 @@ const { deleteFile } = require("../utils/utility");
 const getHomeSettings = async (req, res) => {
   try {
     const settings = await prisma.homeSetting.findFirst({
+      include: {
+        heroImages: {
+          orderBy: { orderNumber: 'asc' }
+        }
+      },
       orderBy: { updatedAt: 'desc' },
     });
 
@@ -21,31 +26,34 @@ const getHomeSettings = async (req, res) => {
 // Get homepage with featured content
 const getHomepage = async (req, res) => {
   try {
-    const [settings, featuredStores, featuredDining, featuredEvents, featuredPromotions] = await Promise.all([
+    const [settings, featuredStores, featuredEvents, featuredBrands] = await Promise.all([
       prisma.homeSetting.findFirst({
+        include: {
+          heroImages: {
+            orderBy: { orderNumber: 'asc' }
+          }
+        },
         orderBy: { updatedAt: 'desc' },
       }),
       prisma.store.findMany({
         where: { isShowInHome: true },
       }),
-      prisma.dining.findMany({
-        where: { isShowInHome: true },
-      }),
       prisma.event.findMany({
         where: { isShowInHome: true },
       }),
-      prisma.promotion.findMany({
+      prisma.brand.findMany({
         where: { isShowInHome: true },
       }),
     ]);
 
     res.status(200).json({
-      homeSettings: settings || {},
-      featured: {
-        stores: featuredStores,
-        dining: featuredDining,
-        events: featuredEvents,
-        promotions: featuredPromotions,
+      hero: settings?.heroImages || [],
+      stores: featuredStores,
+      events: featuredEvents,
+      brands: featuredBrands,
+      quickInfo: {
+        title: settings?.quickInfoTitle,
+        content: settings?.quickInfoContent
       }
     });
   } catch (error) {
@@ -56,9 +64,8 @@ const getHomepage = async (req, res) => {
 // Create home settings
 const createHomeSettings = async (req, res) => {
   try {
-    const { heroTitle, heroSubtitle, quickInfoTitle, quickInfoContent } = req.body;
-    const heroImage = req.file ? `/uploads/${req.file.filename}` : null;
-
+    const { quickInfoTitle, quickInfoContent, heroImages } = req.body;
+    
     const existingSettings = await prisma.homeSetting.findFirst();
     
     if (existingSettings) {
@@ -67,14 +74,28 @@ const createHomeSettings = async (req, res) => {
       });
     }
 
+    const parsedHeroImages = heroImages && typeof heroImages === 'string' 
+      ? JSON.parse(heroImages) 
+      : heroImages;
+
     const settings = await prisma.homeSetting.create({
       data: {
-        heroTitle,
-        heroSubtitle,
         quickInfoTitle,
         quickInfoContent,
-        heroImage,
+        heroImages: {
+          create: parsedHeroImages?.map((hero, index) => ({
+            title: hero.title,
+            description: hero.description,
+            imagePath: hero.imagePath,
+            orderNumber: index
+          })) || []
+        }
       },
+      include: {
+        heroImages: {
+          orderBy: { orderNumber: 'asc' }
+        }
+      }
     });
 
     res.status(201).json({ 
@@ -89,43 +110,69 @@ const createHomeSettings = async (req, res) => {
 // Update home settings
 const updateHomeSettings = async (req, res) => {
   try {
-    const { heroTitle, heroSubtitle, quickInfoTitle, quickInfoContent } = req.body;
+    const { quickInfoTitle, quickInfoContent, heroImages } = req.body;
 
     const existingSettings = await prisma.homeSetting.findFirst({
       orderBy: { updatedAt: 'desc' },
     });
 
-    const heroImage = req.file ? `/uploads/${req.file.filename}` : null;
+    const parsedHeroImages = heroImages && typeof heroImages === 'string' 
+      ? JSON.parse(heroImages) 
+      : heroImages;
 
     let updatedSettings;
 
     if (existingSettings) {
-      updatedSettings = await prisma.homeSetting
-        .update({
+      updatedSettings = await prisma.$transaction(async (prisma) => {
+        // Delete existing hero images if new ones provided
+        if (parsedHeroImages) {
+          await prisma.heroImage.deleteMany({
+            where: { homeSettingId: existingSettings.id }
+          });
+        }
+
+        return await prisma.homeSetting.update({
           where: { id: existingSettings.id },
           data: {
-            heroTitle,
-            heroSubtitle,
             quickInfoTitle,
             quickInfoContent,
-            heroImage: heroImage || existingSettings.heroImage,
+            ...(parsedHeroImages && {
+              heroImages: {
+                create: parsedHeroImages.map((hero, index) => ({
+                  title: hero.title,
+                  description: hero.description,
+                  imagePath: hero.imagePath,
+                  orderNumber: index
+                }))
+              }
+            })
           },
-        })
-        .then((data) => {
-          if (req.file && existingSettings.heroImage) {
-            deleteFile(existingSettings.heroImage);
+          include: {
+            heroImages: {
+              orderBy: { orderNumber: 'asc' }
+            }
           }
-          return data;
         });
+      });
     } else {
       updatedSettings = await prisma.homeSetting.create({
         data: {
-          heroTitle,
-          heroSubtitle,
           quickInfoTitle,
           quickInfoContent,
-          heroImage,
+          heroImages: {
+            create: parsedHeroImages?.map((hero, index) => ({
+              title: hero.title,
+              description: hero.description,
+              imagePath: hero.imagePath,
+              orderNumber: index
+            })) || []
+          }
         },
+        include: {
+          heroImages: {
+            orderBy: { orderNumber: 'asc' }
+          }
+        }
       });
     }
 

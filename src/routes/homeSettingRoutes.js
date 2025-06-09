@@ -12,9 +12,9 @@ const {
 const router = express.Router();
 
 router.get("/", getHomeSettings);
-router.get("/featured", getHomepage);
-router.post("/", upload.single("heroImage"), protect, createHomeSettings);
-router.put("/", upload.single("heroImage"), protect, updateHomeSettings);
+router.get("/homepage", getHomepage);
+router.post("/", upload.none(), protect, createHomeSettings);
+router.put("/", upload.none(), protect, updateHomeSettings);
 router.delete("/", protect, deleteHomeSettings);
 
 module.exports = router;

@@ -12,7 +12,7 @@ const {
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("store", ["category", "isShowInHome"]));
+router.get("/", paginationMiddleware("store", ["category", "location", "isShowInHome"], { include: { category: true, location: true } }));
 router.get("/all", getAllStores);
 router.get("/:id", getStoreById);
 router.post("/", upload.single("image"), protect, createStore);

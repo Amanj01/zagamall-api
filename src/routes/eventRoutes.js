@@ -14,9 +14,7 @@ const router = express.Router();
 
 router.get(
   "/",
-  paginationMiddleware("event", [], {
-    include: { gallery: true },
-  })
+  paginationMiddleware("event")
 );
 
 router.get("/:id", getEventById);
@@ -24,7 +22,6 @@ router.get("/:id", getEventById);
 router.post(
   "/",
   upload.fields([
-    { name: "gallery", maxCount: 10 },
     { name: "coverImage", maxCount: 1 },
   ]),
   protect,
@@ -33,7 +30,6 @@ router.post(
 router.put(
   "/:id",
   upload.fields([
-    { name: "gallery", maxCount: 10 },
     { name: "coverImage", maxCount: 1 },
   ]),
   protect,
@@ -41,7 +37,5 @@ router.put(
 );
 
 router.delete("/:id", protect, deleteRecordMiddleware("event", true));
-
-router.delete("/gallery/:id", protect, deleteRecordMiddleware("eventGallery"));
 
 module.exports = router;

@@ -4,7 +4,15 @@ const { deleteFile } = require("../utils/utility");
 // Get all stores
 const getAllStores = async (req, res) => {
   try {
-    const stores = await prisma.store.findMany();
+    const stores = await prisma.store.findMany({
+      include: {
+        category: true,
+        location: true,
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
     res.status(200).json(stores);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -18,6 +26,10 @@ const getStoreById = async (req, res) => {
 
     const store = await prisma.store.findUnique({
       where: { id: parseInt(id) },
+      include: {
+        category: true,
+        location: true,
+      },
     });
 
     if (!store) {
@@ -33,17 +45,21 @@ const getStoreById = async (req, res) => {
 // Create a new store
 const createStore = async (req, res) => {
   try {
-    const { name, category, location, description, isShowInHome } = req.body;
+    const { name, categoryId, locationId, description, isShowInHome } = req.body;
     const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     const store = await prisma.store.create({
       data: {
         name,
-        category,
-        location,
+        categoryId: parseInt(categoryId),
+        locationId: parseInt(locationId),
         description,
         imagePath,
         isShowInHome: isShowInHome === "true",
+      },
+      include: {
+        category: true,
+        location: true,
       },
     });
 
@@ -57,7 +73,7 @@ const createStore = async (req, res) => {
 const updateStore = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category, location, description, isShowInHome } = req.body;
+    const { name, categoryId, locationId, description, isShowInHome } = req.body;
 
     const existingStore = await prisma.store.findUnique({
       where: { id: parseInt(id) },
@@ -74,11 +90,15 @@ const updateStore = async (req, res) => {
         where: { id: parseInt(id) },
         data: {
           name,
-          category,
-          location,
+          categoryId: parseInt(categoryId),
+          locationId: parseInt(locationId),
           description,
           imagePath,
           isShowInHome: isShowInHome === "true",
+        },
+        include: {
+          category: true,
+          location: true,
         },
       })
       .then((data) => {

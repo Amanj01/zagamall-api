@@ -37,9 +37,9 @@ const paginationMiddleware = (
         skip,
         take,
         orderBy: { [sortBy]: order },
-        include: selecters.include,
-        select: selecters.select,
-        omit: selecters.omit,
+        ...(selecters.include && { include: selecters.include }),
+        ...(selecters.select && { select: selecters.select }),
+        ...(selecters.omit && { omit: selecters.omit }),
       });
 
       const totalCount =

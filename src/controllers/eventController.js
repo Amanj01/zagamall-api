@@ -8,7 +8,6 @@ const getEventById = async (req, res) => {
 
     const event = await prisma.event.findUnique({
       where: { id: parseInt(id) },
-      include: { gallery: true },
     });
 
     if (!event) {
@@ -24,11 +23,23 @@ const getEventById = async (req, res) => {
 // Create a new event
 const createEvent = async (req, res) => {
   try {
-    const { title, content, showOnHomepage, coverImage } = req.body;
+    const { title, content, startDate, endDate, startTime, isShowInHome, coverImage } = req.body;
     
-    // Validate title is provided
+    // Validate required fields
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
+    }
+    
+    if (!startDate) {
+      return res.status(400).json({ error: "Start date is required" });
+    }
+    
+    if (!endDate) {
+      return res.status(400).json({ error: "End date is required" });
+    }
+    
+    if (!startTime) {
+      return res.status(400).json({ error: "Start time is required" });
     }
     
     let eventCoverImage;
@@ -49,27 +60,13 @@ const createEvent = async (req, res) => {
       data: {
         title: String(title),
         content: content || "",
-        showOnHomepage: showOnHomepage === "true",
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        startTime: String(startTime),
+        isShowInHome: isShowInHome === "true",
         coverImage: eventCoverImage,
       },
     });
-
-    // Handle image uploads for gallery
-    const gelleryFiles = req.files?.gallery || [];
-    if (gelleryFiles.length > 0) {
-      await Promise.all(
-        gelleryFiles.map((file) =>
-          prisma.eventGallery.create({
-            data: {
-              imagePath: `/uploads/${file.filename}`,
-              event: {
-                connect: { id: parseInt(event.id) },
-              },
-            },
-          })
-        )
-      );
-    }
 
     res.status(201).json({ message: "Event created successfully", event });
   } catch (error) {
@@ -81,7 +78,7 @@ const createEvent = async (req, res) => {
 const updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, showOnHomepage } = req.body;
+    const { title, content, startDate, endDate, startTime, isShowInHome } = req.body;
 
     const existingEvent = await prisma.event.findUnique({
       where: { id: parseInt(id) },
@@ -104,7 +101,10 @@ const updateEvent = async (req, res) => {
         data: {
           title,
           content,
-          showOnHomepage: showOnHomepage === "true",
+          startDate: startDate ? new Date(startDate) : existingEvent.startDate,
+          endDate: endDate ? new Date(endDate) : existingEvent.endDate,
+          startTime: startTime || existingEvent.startTime,
+          isShowInHome: isShowInHome === "true",
           coverImage,
         },
       })
@@ -112,23 +112,6 @@ const updateEvent = async (req, res) => {
         if (newCoverImage) deleteFile(existingEvent.coverImage);
         return data;
       });
-
-    // Handle image uploads for gallery
-    const gelleryFiles = req.files?.gallery || [];
-    if (gelleryFiles.length > 0) {
-      await Promise.all(
-        gelleryFiles.map((file) =>
-          prisma.eventGallery.create({
-            data: {
-              imagePath: `/uploads/${file.filename}`,
-              event: {
-                connect: { id: parseInt(id) },
-              },
-            },
-          })
-        )
-      );
-    }
 
     res
       .status(200)
@@ -138,34 +121,8 @@ const updateEvent = async (req, res) => {
   }
 };
 
-// Delete a specific image from an event's gallery
-const deleteEventImage = async (req, res) => {
-  try {
-    const { id, imageId } = req.params;
-
-    const existingImage = await prisma.eventGallery.findUnique({
-      where: { id: parseInt(imageId) },
-    });
-
-    if (!existingImage || existingImage.eventId !== parseInt(id)) {
-      return res
-        .status(404)
-        .json({ message: "Image not found in the gallery" });
-    }
-    await prisma.eventGallery
-      .delete({ where: { id: parseInt(imageId) } })
-      .then(() => {
-        deleteFile(existingImage.imagePath);
-      });
-    res.status(200).json({ message: "Image deleted from gallery" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 module.exports = {
   getEventById,
   createEvent,
   updateEvent,
-  deleteEventImage,
 };

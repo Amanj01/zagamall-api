@@ -1,48 +1,37 @@
-// Generator for Prisma Client
 generator client {
-  provider = "prisma-client-js" // Specifies the Prisma Client to be used
+  provider = "prisma-client-js"
 }
 
-// Datasource Configuration
 datasource db {
-  provider = "postgres" // Change to "postgresql" if you're using PostgreSQL
-  url      = env("DATABASE_URL") // Reads database connection string from .env
+  provider = "postgres"
+  url      = env("DATABASE_URL")
 }
 
-// Event Table
 model Event {
   id             Int            @id @default(autoincrement())
   title          String
   content        String
   coverImage     String
-  showOnHomepage Boolean        @default(false)
-  gallery        EventGallery[]
+  startDate      DateTime
+  endDate        DateTime
+  startTime      String
+  isShowInHome   Boolean        @default(false)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
 
-// Event Gallery Table
-model EventGallery {
-  id        Int    @id @default(autoincrement())
-  imagePath String
-  eventId   Int
-  event     Event  @relation(fields: [eventId], references: [id], onDelete: Cascade, onUpdate: Cascade) // Foreign Key
-}
-
-// User Table
 model User {
   id        Int      @id @default(autoincrement())
   name      String
-  email     String   @unique // Unique email for each user
-  password  String // Hashed password
-  username  String   @unique // Unique username
+  email     String   @unique
+  password  String
+  username  String   @unique
   role_id   Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  role      Role?    @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role      Role     @relation(fields: [role_id], references: [id], onDelete: Cascade)
 }
 
-// Reset password tokens Table
 model PasswordTokens {
   id        Int      @id @default(autoincrement())
   token     String   @unique
@@ -54,16 +43,16 @@ model Permissions {
   name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Role      Role[]
+  Role      Role[]   @relation("PermissionsToRole")
 }
 
 model Role {
   id          Int           @id @default(autoincrement())
   name        String        @unique
-  permissions Permissions[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   User        User[]
+  permissions Permissions[] @relation("PermissionsToRole")
 }
 
 model ContactMe {
@@ -75,17 +64,18 @@ model ContactMe {
   updatedAt DateTime @updatedAt
 }
 
-// Zaga Mall models
 model Store {
   id           Int      @id @default(autoincrement())
   name         String
-  category     String
-  location     String
-  description  String   @db.Text
+  categoryId   Int
+  locationId   Int
+  description  String
   imagePath    String?
   isShowInHome Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 }
 
 model Dining {
@@ -93,7 +83,7 @@ model Dining {
   name         String
   category     String
   location     String
-  description  String   @db.Text
+  description  String
   hours        String?
   rating       Float?
   imagePath    String?
@@ -107,7 +97,7 @@ model Promotion {
   title        String
   period       String?
   stores       String?
-  description  String   @db.Text
+  description  String
   imagePath    String?
   isShowInHome Boolean  @default(false)
   createdAt    DateTime @default(now())
@@ -117,22 +107,22 @@ model Promotion {
 model About {
   id              Int             @id @default(autoincrement())
   title           String
-  description     String          @db.Text
+  description     String
   image           String?
-  ourValues       OurValue[]
-  factsAndFigures FactAndFigure[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  factsAndFigures FactAndFigure[]
+  ourValues       OurValue[]
 }
 
 model OurValue {
   id          Int      @id @default(autoincrement())
   title       String
-  description String   @db.Text
+  description String
   aboutId     Int
-  about       About    @relation(fields: [aboutId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  about       About    @relation(fields: [aboutId], references: [id], onDelete: Cascade)
 }
 
 model FactAndFigure {
@@ -140,16 +130,16 @@ model FactAndFigure {
   number      String
   description String
   aboutId     Int
-  about       About    @relation(fields: [aboutId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  about       About    @relation(fields: [aboutId], references: [id], onDelete: Cascade)
 }
 
 model TeamMember {
   id        Int      @id @default(autoincrement())
   name      String
   position  String
-  bio       String   @db.Text
+  bio       String
   imagePath String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -158,9 +148,9 @@ model TeamMember {
 model FAQ {
   id          Int      @id @default(autoincrement())
   question    String
-  answer      String   @db.Text
+  answer      String
   category    String
-  orderNumber Int      @default(0) // Added orderNumber field with default value 0
+  orderNumber Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -171,7 +161,55 @@ model ContactInquiry {
   email     String
   phone     String?
   subject   String
-  message   String   @db.Text
+  message   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Brand {
+  id        Int      @id @default(autoincrement())
+  name      String
+  image      String
+  isShowInHome Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HomeSetting {
+  id               Int        @id @default(autoincrement())
+  quickInfoTitle   String?
+  quickInfoContent String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  heroImages       HeroImage[]
+}
+
+model HeroImage {
+  id            Int         @id @default(autoincrement())
+  title         String
+  description   String?
+  imagePath     String
+  orderNumber   Int         @default(0)
+  homeSettingId Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  homeSetting   HomeSetting @relation(fields: [homeSettingId], references: [id], onDelete: Cascade)
+}
+
+model Location {
+  id                      Int     @id @default(autoincrement())
+  level                   Int
+  storeNum                Int
+  locationByDescription   String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  stores                  Store[]
+}
+
+model Category {
+  id           Int      @id @default(autoincrement())
+  categoryName String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  stores       Store[]
 }
