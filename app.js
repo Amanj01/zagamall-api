@@ -23,6 +23,8 @@ const homeSettingRoutes = require("./src/routes/homeSettingRoutes");
 const brandRoutes = require("./src/routes/brandRoutes");
 const locationRoutes = require("./src/routes/locationRoutes");
 const categoryRoutes = require("./src/routes/categoryRoutes");
+const resourceRoutes = require('./src/routes/resourceRoutes');
+const officeRoutes = require('./src/routes/officeRoutes');
 
 const extractClientIp = require("./src/middlewares/clientIpMiddleware");
 
@@ -61,6 +63,8 @@ app.use("/api/brands", brandRoutes);
 app.use("/api/auth", userRoutes); // Using existing userRoutes for auth
 app.use("/api/locations", locationRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use('/api/resource', resourceRoutes);
+app.use('/offices', officeRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

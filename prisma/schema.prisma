@@ -204,6 +204,7 @@ model Location {
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   stores                  Store[]
+  offices                 Office[] // Add this line for Office back-relation
 }
 
 model Category {
@@ -212,4 +213,26 @@ model Category {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   stores       Store[]
+}
+
+model Office {
+  id           Int             @id @default(autoincrement())
+  title        String
+  image        String?         // Cover image
+  locationId   Int
+  description  String
+  area         Int             // Area in number, validated in backend
+  features     String          // Features or name/office feature
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  location     Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  gallery      OfficeGallery[]
+}
+
+model OfficeGallery {
+  id        Int     @id @default(autoincrement())
+  imagePath String
+  officeId  Int
+  office    Office  @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
