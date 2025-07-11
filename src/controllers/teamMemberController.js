@@ -1,5 +1,5 @@
 const prisma = require("../prisma");
-const { deleteFile } = require("../utils/utility");
+const { deleteCloudinaryImage } = require("../utils/utility");
 
 // Get all team members
 const getAllTeamMembers = async (req, res) => {
@@ -33,9 +33,7 @@ const getTeamMemberById = async (req, res) => {
 // Create a new team member
 const createTeamMember = async (req, res) => {
   try {
-    const { name, position, bio } = req.body;
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-
+    const { name, position, bio, imagePath } = req.body;
     const teamMember = await prisma.teamMember.create({
       data: {
         name,
@@ -44,7 +42,6 @@ const createTeamMember = async (req, res) => {
         imagePath,
       },
     });
-
     res.status(201).json({ message: "Team member created successfully", teamMember });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -55,39 +52,27 @@ const createTeamMember = async (req, res) => {
 const updateTeamMember = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, position, bio } = req.body;
-
+    const { name, position, bio, imagePath } = req.body;
     const existingTeamMember = await prisma.teamMember.findUnique({
       where: { id: parseInt(id) },
     });
-
     if (!existingTeamMember) {
       return res.status(404).json({ message: "Team member not found" });
     }
-
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : existingTeamMember.imagePath;
-
-    const updatedTeamMember = await prisma.teamMember
-      .update({
-        where: { id: parseInt(id) },
-        data: {
-          name,
-          position,
-          bio,
-          imagePath,
-        },
-      })
-      .then((data) => {
-        if (req.file && existingTeamMember.imagePath) {
-          deleteFile(existingTeamMember.imagePath);
-        }
-        return data;
-      });
-
-    res.status(200).json({
-      message: "Team member updated successfully",
-      teamMember: updatedTeamMember,
+    // Delete old Cloudinary image if imagePath is changing
+    if (imagePath && imagePath !== existingTeamMember.imagePath && existingTeamMember.imagePath) {
+      await deleteCloudinaryImage(existingTeamMember.imagePath);
+    }
+    const updatedTeamMember = await prisma.teamMember.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        position,
+        bio,
+        imagePath,
+      },
     });
+    res.status(200).json({ message: "Team member updated successfully", teamMember: updatedTeamMember });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

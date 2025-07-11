@@ -1,6 +1,13 @@
 const fs = require("fs");
 const path = require("path");
 const { getDMMF } = require("@prisma/internals");
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const isBeforeHoursAgo = (dateString, hours) => {
   const inputDate = new Date(dateString);
@@ -25,6 +32,25 @@ const deleteFile = async (filePath) => {
     });
   } catch (err) {
     console.error(`Failed to delete file ${fileToDelete}: ${err.message}`);
+  }
+};
+
+/**
+ * Delete a Cloudinary image by its URL
+ * @param {string} imageUrl
+ */
+const deleteCloudinaryImage = async (imageUrl) => {
+  if (!imageUrl) return;
+  try {
+    // Extract public_id from the URL (no folder)
+    // Example: https://res.cloudinary.com/your_cloud/image/upload/v1234567890/office_xxx.png
+    const matches = imageUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z]+$/);
+    let publicId = matches && matches[1] ? matches[1] : imageUrl.substring(imageUrl.lastIndexOf('/') + 1, imageUrl.lastIndexOf('.'));
+    console.log('Deleting Cloudinary image:', { imageUrl, publicId });
+    const result = await cloudinary.uploader.destroy(publicId, { invalidate: true });
+    console.log('Cloudinary destroy result:', result);
+  } catch (err) {
+    console.error(`Failed to delete Cloudinary image: ${imageUrl} - ${err.message}`);
   }
 };
 
@@ -86,4 +112,4 @@ async function getRelations(modelName, dmmf = null, memo = new Set()) {
   return includeRelations;
 }
 
-module.exports = { isBeforeHoursAgo, deleteFile, getRelations };
+module.exports = { isBeforeHoursAgo, deleteFile, getRelations, deleteCloudinaryImage };

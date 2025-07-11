@@ -1,5 +1,5 @@
 const prisma = require("../prisma");
-const { deleteFile } = require("../utils/utility");
+const { deleteCloudinaryImage } = require("../utils/utility");
 
 // Get all dining options
 const getAllDinings = async (req, res) => {
@@ -33,9 +33,7 @@ const getDiningById = async (req, res) => {
 // Create a new dining option
 const createDining = async (req, res) => {
   try {
-    const { name, category, location, description, hours, rating, isShowInHome } = req.body;
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-
+    const { name, category, location, description, hours, rating, isShowInHome, imagePath } = req.body;
     const dining = await prisma.dining.create({
       data: {
         name,
@@ -48,7 +46,6 @@ const createDining = async (req, res) => {
         isShowInHome: isShowInHome === "true",
       },
     });
-
     res.status(201).json({ message: "Dining option created successfully", dining });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -59,43 +56,31 @@ const createDining = async (req, res) => {
 const updateDining = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category, location, description, hours, rating, isShowInHome } = req.body;
-
+    const { name, category, location, description, hours, rating, isShowInHome, imagePath } = req.body;
     const existingDining = await prisma.dining.findUnique({
       where: { id: parseInt(id) },
     });
-
     if (!existingDining) {
       return res.status(404).json({ message: "Dining option not found" });
     }
-
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : existingDining.imagePath;
-
-    const updatedDining = await prisma.dining
-      .update({
-        where: { id: parseInt(id) },
-        data: {
-          name,
-          category,
-          location,
-          description,
-          hours,
-          rating: rating ? parseFloat(rating) : existingDining.rating,
-          imagePath,
-          isShowInHome: isShowInHome === "true",
-        },
-      })
-      .then((data) => {
-        if (req.file && existingDining.imagePath) {
-          deleteFile(existingDining.imagePath);
-        }
-        return data;
-      });
-
-    res.status(200).json({
-      message: "Dining option updated successfully",
-      dining: updatedDining,
+    // Delete old Cloudinary image if imagePath is changing
+    if (imagePath && imagePath !== existingDining.imagePath && existingDining.imagePath) {
+      await deleteCloudinaryImage(existingDining.imagePath);
+    }
+    const updatedDining = await prisma.dining.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        category,
+        location,
+        description,
+        hours,
+        rating: rating ? parseFloat(rating) : existingDining.rating,
+        imagePath,
+        isShowInHome: isShowInHome === "true",
+      },
     });
+    res.status(200).json({ message: "Dining option updated successfully", dining: updatedDining });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

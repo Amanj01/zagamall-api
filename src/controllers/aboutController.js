@@ -1,5 +1,5 @@
 const prisma = require("../prisma");
-const { deleteFile } = require("../utils/utility");
+const { deleteCloudinaryImage } = require("../utils/utility");
 
 // Get about information
 const getAbout = async (req, res) => {
@@ -36,25 +36,14 @@ const getAbout = async (req, res) => {
 // Create new about information
 const createAbout = async (req, res) => {
   try {
-    // Check if prisma client is properly initialized
-    if (!prisma || !prisma.about) {
-      return res.status(500).json({ 
-        message: "Database connection error or 'about' model not available",
-        error: "Make sure you've run 'npx prisma migrate dev' to update your database"
-      });
-    }
-
-    const { title, description, ourValues, factsAndFigures } = req.body;
-    
+    const { title, description, ourValues, factsAndFigures, image } = req.body;
     // Parse JSON strings if they come as strings
     const parsedValues = ourValues && typeof ourValues === 'string' 
       ? JSON.parse(ourValues)
       : ourValues;
-      
     const parsedFacts = factsAndFigures && typeof factsAndFigures === 'string'
       ? JSON.parse(factsAndFigures)
       : factsAndFigures;
-    
     // Check if about info already exists
     const existingAbout = await prisma.about.findFirst();
     if (existingAbout) {
@@ -62,15 +51,12 @@ const createAbout = async (req, res) => {
         message: "About information already exists. Use PUT to update it."
       });
     }
-
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
-
     // Create about with relations in a transaction
     const aboutInfo = await prisma.about.create({
       data: {
         title,
         description,
-        image: imagePath,
+        image,
         ourValues: {
           create: parsedValues && parsedValues.slice(0, 4).map(value => ({
             title: value.title,
@@ -89,52 +75,35 @@ const createAbout = async (req, res) => {
         factsAndFigures: true,
       },
     });
-
     res.status(201).json({
       message: "About information created successfully",
       about: aboutInfo,
     });
   } catch (error) {
-    console.error("Error in createAbout:", error);
-    res.status(500).json({ 
-      error: error.message,
-      hint: "Make sure you've run 'npx prisma migrate dev' to update your database with the new models"
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
 // Update about information
 const updateAbout = async (req, res) => {
   try {
-    // Check if prisma client is properly initialized
-    if (!prisma || !prisma.about) {
-      return res.status(500).json({ 
-        message: "Database connection error or 'about' model not available",
-        error: "Make sure you've run 'npx prisma migrate dev' to update your database"
-      });
-    }
-    
-    const { title, description, ourValues, factsAndFigures } = req.body;
-    
+    const { title, description, ourValues, factsAndFigures, image } = req.body;
     // Parse JSON strings if they come as strings
     const parsedValues = ourValues && typeof ourValues === 'string' 
       ? JSON.parse(ourValues)
       : ourValues;
-      
     const parsedFacts = factsAndFigures && typeof factsAndFigures === 'string'
       ? JSON.parse(factsAndFigures)
       : factsAndFigures;
-
     // Find existing about info
     const existingAbout = await prisma.about.findFirst();
     if (!existingAbout) {
       return res.status(404).json({ message: "About information not found" });
     }
-
-    const imagePath = req.file 
-      ? `/uploads/${req.file.filename}` 
-      : existingAbout.image;
-
+    // Delete old Cloudinary image if image is changing
+    if (image && image !== existingAbout.image && existingAbout.image) {
+      await deleteCloudinaryImage(existingAbout.image);
+    }
     // Update in a transaction
     const updatedAbout = await prisma.$transaction(async (prisma) => {
       // Delete existing relations
@@ -143,20 +112,18 @@ const updateAbout = async (req, res) => {
           where: { aboutId: existingAbout.id },
         });
       }
-      
       if (parsedFacts) {
         await prisma.factAndFigure.deleteMany({
           where: { aboutId: existingAbout.id },
         });
       }
-
       // Update the main about record
       const updatedAboutInfo = await prisma.about.update({
         where: { id: existingAbout.id },
         data: {
           title: title || existingAbout.title,
           description: description || existingAbout.description,
-          image: imagePath,
+          image,
           ...(parsedValues && {
             ourValues: {
               create: parsedValues.slice(0, 4).map(value => ({
@@ -179,25 +146,14 @@ const updateAbout = async (req, res) => {
           factsAndFigures: true,
         },
       });
-
       return updatedAboutInfo;
     });
-
-    // Clean up old image if new one was uploaded
-    if (req.file && existingAbout.image) {
-      deleteFile(existingAbout.image);
-    }
-
     res.status(200).json({
       message: "About information updated successfully",
       about: updatedAbout,
     });
   } catch (error) {
-    console.error("Error in updateAbout:", error);
-    res.status(500).json({ 
-      error: error.message,
-      hint: "Make sure you've run 'npx prisma migrate dev' to update your database with the new models"
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -225,7 +181,7 @@ const deleteAbout = async (req, res) => {
 
     // Clean up image if exists
     if (existingAbout.image) {
-      deleteFile(existingAbout.image);
+      await deleteCloudinaryImage(existingAbout.image);
     }
 
     res.status(200).json({ message: "About information deleted successfully" });

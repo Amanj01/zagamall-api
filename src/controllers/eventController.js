@@ -1,5 +1,5 @@
 const prisma = require("../prisma");
-const { deleteFile } = require("../utils/utility");
+const { deleteCloudinaryImage } = require("../utils/utility");
 
 // Get a specific event by ID
 const getEventById = async (req, res) => {
@@ -23,7 +23,7 @@ const getEventById = async (req, res) => {
 // Create a new event
 const createEvent = async (req, res) => {
   try {
-    const { title, content, startDate, endDate, startTime, isShowInHome, coverImage } = req.body;
+    const { title, content, startDate, endDate, startTime, isShowInHome } = req.body;
     
     // Validate required fields
     if (!title) {
@@ -42,17 +42,8 @@ const createEvent = async (req, res) => {
       return res.status(400).json({ error: "Start time is required" });
     }
     
-    let eventCoverImage;
-    
-    // Check if cover image is provided as a file upload
-    if (req.files && req.files.coverImage && req.files.coverImage[0]) {
-      eventCoverImage = `/uploads/${req.files.coverImage[0].filename}`;
-    } 
-    // Check if cover image is provided as a URL in the request body
-    else if (coverImage) {
-      eventCoverImage = coverImage;
-    } else {
-      // No cover image provided
+    let eventCoverImage = req.body.coverImage;
+    if (!eventCoverImage) {
       return res.status(400).json({ error: "Cover image is required" });
     }
 
@@ -88,12 +79,11 @@ const updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const newCoverImage = req.files && req.files.coverImage && req.files.coverImage[0]
-      ? req.files.coverImage[0].filename
-      : undefined;
-    const coverImage = newCoverImage
-      ? `/uploads/${newCoverImage}`
-      : existingEvent.coverImage;
+    const coverImage = req.body.coverImage || existingEvent.coverImage;
+    // If coverImage changed, delete old Cloudinary image
+    if (coverImage && coverImage !== existingEvent.coverImage && existingEvent.coverImage) {
+      await deleteCloudinaryImage(existingEvent.coverImage);
+    }
 
     const updatedEvent = await prisma.event
       .update({
@@ -109,7 +99,6 @@ const updateEvent = async (req, res) => {
         },
       })
       .then((data) => {
-        if (newCoverImage) deleteFile(existingEvent.coverImage);
         return data;
       });
 

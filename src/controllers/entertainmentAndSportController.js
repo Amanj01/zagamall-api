@@ -1,5 +1,5 @@
 const prisma = require("../prisma");
-const { deleteFile } = require("../utils/utility");
+const { deleteCloudinaryImage } = require("../utils/utility");
 
 // Constants
 const DEFAULT_PAGE = 1;
@@ -115,10 +115,11 @@ const createEntertainmentAndSport = async (req, res) => {
     if (error) {
       return res.status(400).json({ status: "error", data: null, meta: null, error });
     }
-    const { title, locationId, description, area } = req.body;
+    const { title, locationId, description, area, gallery } = req.body;
+    // gallery: array of Cloudinary URL strings
     let galleryImages = [];
-    if (req.files && req.files["gallery"]) {
-      galleryImages = req.files["gallery"].map(file => ({ imagePath: `/uploads/${file.filename}` }));
+    if (Array.isArray(gallery)) {
+      galleryImages = gallery.map(url => ({ imagePath: url }));
     }
     const item = await prisma.entertainmentAndSport.create({
       data: {
@@ -154,15 +155,25 @@ const updateEntertainmentAndSport = async (req, res) => {
     if (error) {
       return res.status(400).json({ status: "error", data: null, meta: null, error });
     }
-    const { title, locationId, description, area } = req.body;
-    const existing = await prisma.entertainmentAndSport.findUnique({ where: { id: parseInt(id) } });
+    const { title, locationId, description, area, gallery } = req.body;
+    const existing = await prisma.entertainmentAndSport.findUnique({ where: { id: parseInt(id) }, include: { gallery: true } });
     if (!existing) {
       return res.status(404).json({ status: "error", data: null, meta: null, error: { message: "Not found" } });
     }
-    let galleryImages = [];
-    if (req.files && req.files["gallery"]) {
-      galleryImages = req.files["gallery"].map(file => ({ imagePath: `/uploads/${file.filename}`, entertainmentAndSportId: parseInt(id) }));
-      await prisma.entertainmentAndSportGallery.createMany({ data: galleryImages });
+    // Delete removed gallery images from Cloudinary
+    if (Array.isArray(gallery)) {
+      const oldGallery = existing.gallery.map(g => g.imagePath);
+      const removed = oldGallery.filter(url => !gallery.includes(url));
+      for (const url of removed) {
+        await deleteCloudinaryImage(url);
+      }
+      // Remove old gallery images from DB
+      await prisma.entertainmentAndSportGallery.deleteMany({ where: { entertainmentAndSportId: parseInt(id), imagePath: { in: removed } } });
+      // Add new gallery images
+      const newImages = gallery.filter(url => !oldGallery.includes(url)).map(url => ({ imagePath: url, entertainmentAndSportId: parseInt(id) }));
+      if (newImages.length > 0) {
+        await prisma.entertainmentAndSportGallery.createMany({ data: newImages });
+      }
     }
     const updated = await prisma.entertainmentAndSport.update({
       where: { id: parseInt(id) },
@@ -199,9 +210,9 @@ const deleteEntertainmentAndSport = async (req, res) => {
       return res.status(404).json({ status: "error", data: null, meta: null, error: { message: "Not found" } });
     }
     for (const img of item.gallery) {
-      if (img.imagePath) deleteFile(img.imagePath);
-      await prisma.entertainmentAndSportGallery.deleteMany({ where: { entertainmentAndSportId: item.id } });
+      if (img.imagePath) await deleteCloudinaryImage(img.imagePath);
     }
+    await prisma.entertainmentAndSportGallery.deleteMany({ where: { entertainmentAndSportId: item.id } });
     await prisma.entertainmentAndSport.delete({ where: { id: item.id } });
     return res.status(200).json({ status: "success", message: "Deleted successfully" });
   } catch (error) {
@@ -222,7 +233,7 @@ const deleteEntertainmentAndSportGalleryImage = async (req, res) => {
     if (!galleryImage) {
       return res.status(404).json({ status: "error", data: null, meta: null, error: { message: "Gallery image not found" } });
     }
-    if (galleryImage.imagePath) deleteFile(galleryImage.imagePath);
+    if (galleryImage.imagePath) await deleteCloudinaryImage(galleryImage.imagePath);
     await prisma.entertainmentAndSportGallery.delete({ where: { id: galleryImage.id } });
     return res.status(200).json({ status: "success", message: "Gallery image deleted successfully" });
   } catch (error) {

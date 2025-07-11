@@ -1,5 +1,5 @@
 const prisma = require("../prisma");
-const { deleteFile } = require("../utils/utility");
+const { deleteCloudinaryImage } = require("../utils/utility");
 
 // Constants
 const DEFAULT_PAGE = 1;
@@ -151,11 +151,12 @@ const createOffice = async (req, res) => {
     if (error) {
       return res.status(400).json({ status: "error", data: null, meta: null, error });
     }
-    const { title, locationId, description, area } = req.body;
-    const image = req.files && req.files["image"] ? `/uploads/${req.files["image"][0].filename}` : null;
+    const { title, locationId, description, area, image, gallery } = req.body;
+    // image: Cloudinary URL string
+    // gallery: array of Cloudinary URL strings
     let galleryImages = [];
-    if (req.files && req.files["gallery"]) {
-      galleryImages = req.files["gallery"].map(file => ({ imagePath: `/uploads/${file.filename}` }));
+    if (Array.isArray(gallery)) {
+      galleryImages = gallery.map(url => ({ imagePath: url }));
     }
     const office = await prisma.office.create({
       data: {
@@ -196,8 +197,8 @@ const updateOffice = async (req, res) => {
     if (error) {
       return res.status(400).json({ status: "error", data: null, meta: null, error });
     }
-    const { title, locationId, description, area } = req.body;
-    const existingOffice = await prisma.office.findUnique({ where: { id: parseInt(id) } });
+    const { title, locationId, description, area, image, gallery } = req.body;
+    const existingOffice = await prisma.office.findUnique({ where: { id: parseInt(id) }, include: { gallery: true } });
     if (!existingOffice) {
       return res.status(404).json({
         status: "error",
@@ -206,11 +207,24 @@ const updateOffice = async (req, res) => {
         error: { message: "Office not found" }
       });
     }
-    const image = req.files && req.files["image"] ? `/uploads/${req.files["image"][0].filename}` : existingOffice.image;
-    let galleryImages = [];
-    if (req.files && req.files["gallery"]) {
-      galleryImages = req.files["gallery"].map(file => ({ imagePath: `/uploads/${file.filename}`, officeId: parseInt(id) }));
-      await prisma.officeGallery.createMany({ data: galleryImages });
+    // Delete old Cloudinary image if image is changing
+    if (image && image !== existingOffice.image && existingOffice.image) {
+      await deleteCloudinaryImage(existingOffice.image);
+    }
+    // Delete removed gallery images from Cloudinary
+    if (Array.isArray(gallery)) {
+      const oldGallery = existingOffice.gallery.map(g => g.imagePath);
+      const removed = oldGallery.filter(url => !gallery.includes(url));
+      for (const url of removed) {
+        await deleteCloudinaryImage(url);
+      }
+      // Remove old gallery images from DB
+      await prisma.officeGallery.deleteMany({ where: { officeId: parseInt(id), imagePath: { in: removed } } });
+      // Add new gallery images
+      const newImages = gallery.filter(url => !oldGallery.includes(url)).map(url => ({ imagePath: url, officeId: parseInt(id) }));
+      if (newImages.length > 0) {
+        await prisma.officeGallery.createMany({ data: newImages });
+      }
     }
     const updatedOffice = await prisma.office.update({
       where: { id: parseInt(id) },
@@ -257,9 +271,9 @@ const deleteOffice = async (req, res) => {
       });
     }
     for (const img of office.gallery) {
-      if (img.imagePath) deleteFile(img.imagePath);
+      if (img.imagePath) await deleteCloudinaryImage(img.imagePath);
     }
-    if (office.image) deleteFile(office.image);
+    if (office.image) await deleteCloudinaryImage(office.image);
     await prisma.officeGallery.deleteMany({ where: { officeId: office.id } });
     await prisma.office.delete({ where: { id: office.id } });
     return res.status(200).json({
@@ -296,7 +310,7 @@ const deleteOfficeGalleryImage = async (req, res) => {
         error: { message: "Gallery image not found" }
       });
     }
-    if (galleryImage.imagePath) deleteFile(galleryImage.imagePath);
+    if (galleryImage.imagePath) await deleteCloudinaryImage(galleryImage.imagePath);
     await prisma.officeGallery.delete({ where: { id: galleryImage.id } });
     return res.status(200).json({
       status: "success",

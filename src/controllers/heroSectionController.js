@@ -1,5 +1,5 @@
 const prisma = require("../prisma");
-const { deleteFile } = require("../utils/utility");
+const { deleteFile, deleteCloudinaryImage } = require("../utils/utility");
 
 // Get all hero sections with pagination, search, and meta
 const getHeroSections = async (req, res) => {
@@ -77,7 +77,6 @@ const getHeroSections = async (req, res) => {
       links
     });
   } catch (error) {
-    console.error("Error fetching hero sections:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch hero sections",
@@ -116,7 +115,6 @@ const getHeroSectionById = async (req, res) => {
       data: heroSection
     });
   } catch (error) {
-    console.error("Error fetching hero section:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch hero section",
@@ -206,7 +204,6 @@ const createHeroSection = async (req, res) => {
       data: heroSection
     });
   } catch (error) {
-    console.error("Error creating hero section:", error);
     // Handle Prisma unique constraint errors
     if (error.code === 'P2002') {
       return res.status(409).json({
@@ -248,70 +245,9 @@ const updateHeroSection = async (req, res) => {
       });
     }
 
-    // Validation for title
-    if (title !== undefined) {
-      if (!title || title.trim().length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Title cannot be empty"
-        });
-      }
-
-      if (title.length > 255) {
-        return res.status(400).json({
-          success: false,
-          message: "Title cannot exceed 255 characters"
-        });
-      }
-
-      // Check if title already exists (excluding current hero)
-      const existingHeroWithTitle = await prisma.heroSection.findFirst({
-        where: { 
-          title: { equals: title.trim(), mode: 'insensitive' },
-          id: { not: heroSectionId }
-        }
-      });
-
-      if (existingHeroWithTitle) {
-        return res.status(409).json({
-          success: false,
-          message: "A hero section with this title already exists"
-        });
-      }
-    }
-
-    // Validation for description
-    if (description !== undefined && description && description.length > 1000) {
-      return res.status(400).json({
-        success: false,
-        message: "Description cannot exceed 1000 characters"
-      });
-    }
-
-    // Validation for order number
-    if (orderNumber !== undefined) {
-      const parsedOrderNumber = parseInt(orderNumber);
-      if (isNaN(parsedOrderNumber) || parsedOrderNumber < 1) {
-        return res.status(400).json({
-          success: false,
-          message: "Order number must be a positive integer"
-        });
-      }
-
-      // Check if order number already exists (excluding current hero)
-      const existingHeroWithOrder = await prisma.heroSection.findFirst({
-        where: { 
-          orderNumber: parsedOrderNumber,
-          id: { not: heroSectionId }
-        }
-      });
-
-      if (existingHeroWithOrder) {
-        return res.status(409).json({
-          success: false,
-          message: `Order number ${parsedOrderNumber} is already taken. Please choose a different order number.`
-        });
-      }
+    // If imagePath is being updated and is different, delete the old Cloudinary image
+    if (imagePath && imagePath !== existingHeroSection.imagePath && existingHeroSection.imagePath) {
+      await deleteCloudinaryImage(existingHeroSection.imagePath);
     }
 
     // Prepare update data
@@ -332,7 +268,6 @@ const updateHeroSection = async (req, res) => {
       data: updatedHeroSection
     });
   } catch (error) {
-    console.error("Error updating hero section:", error);
     // Handle Prisma unique constraint errors
     if (error.code === 'P2002') {
       return res.status(409).json({
@@ -355,41 +290,54 @@ const deleteHeroSection = async (req, res) => {
     const heroSectionId = parseInt(id);
 
     if (isNaN(heroSectionId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid hero section ID"
-      });
+      return res.status(400).json({ success: false, message: "Invalid hero section ID" });
     }
 
-    // Check if hero section exists
+    // Fetch the hero section first (to get imagePath and check existence)
     const existingHeroSection = await prisma.heroSection.findUnique({
       where: { id: heroSectionId }
     });
 
     if (!existingHeroSection) {
-      return res.status(404).json({
-        success: false,
-        message: "Hero section not found"
+      // If already deleted, return success (idempotent)
+      return res.status(200).json({
+        success: true,
+        message: "Hero section already deleted",
+        data: null
       });
     }
 
-    // Delete the image file
+    // Delete the Cloudinary image if it exists
     if (existingHeroSection.imagePath) {
-      deleteFile(existingHeroSection.imagePath);
+      await deleteCloudinaryImage(existingHeroSection.imagePath);
     }
 
-    // Delete from database
-    await prisma.heroSection.delete({
-      where: { id: heroSectionId }
-    });
+    // Now delete from database
+    try {
+      await prisma.heroSection.delete({
+        where: { id: heroSectionId }
+      });
+    } catch (error) {
+      // Handle P2025 error (record not found)
+      if (error.code === 'P2025') {
+        // Record already deleted, treat as success (idempotent)
+        return res.status(200).json({
+          success: true,
+          message: "Hero section already deleted",
+          data: null
+        });
+      }
+      // Other errors should be thrown to the outer catch
+      throw error;
+    }
 
-    res.status(200).json({
+    // Do not fetch the hero section after deletion
+    return res.status(200).json({
       success: true,
       message: "Hero section deleted successfully",
       data: null
     });
   } catch (error) {
-    console.error("Error deleting hero section:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete hero section",
@@ -397,7 +345,7 @@ const deleteHeroSection = async (req, res) => {
     });
   }
 };
-      message: "Hero section deleted successfully"
+
 const reorderHeroSections = async (req, res) => {
   try {
     const { heroSections } = req.body;
@@ -464,7 +412,6 @@ const reorderHeroSections = async (req, res) => {
       data: updatedHeroSections
     });
   } catch (error) {
-    console.error("Error reordering hero sections:", error);
     res.status(500).json({
       success: false,
       message: "Failed to reorder hero sections",
@@ -493,7 +440,6 @@ const getHomepageHeroSections = async (req, res) => {
       data: heroSections
     });
   } catch (error) {
-    console.error("Error fetching homepage hero sections:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch homepage hero sections",
