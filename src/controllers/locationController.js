@@ -35,12 +35,13 @@ const getLocationById = async (req, res) => {
 // Create a new location
 const createLocation = async (req, res) => {
   try {
-    const { level, storeNum, locationByDescription } = req.body;
+    const { level, number, type, locationByDescription } = req.body;
 
     const location = await prisma.location.create({
       data: {
         level,
-        storeNum,
+        number,
+        type,
         locationByDescription,
       },
     });
@@ -55,7 +56,7 @@ const createLocation = async (req, res) => {
 const updateLocation = async (req, res) => {
   try {
     const { id } = req.params;
-    const { level, storeNum, locationByDescription } = req.body;
+    const { level, number, type, locationByDescription } = req.body;
 
     const existingLocation = await prisma.location.findUnique({
       where: { id: parseInt(id) },
@@ -69,7 +70,8 @@ const updateLocation = async (req, res) => {
       where: { id: parseInt(id) },
       data: {
         level,
-        storeNum,
+        number,
+        type,
         locationByDescription,
       },
     });
@@ -83,9 +85,35 @@ const updateLocation = async (req, res) => {
   }
 };
 
+// Get only store locations
+const getStoreLocations = async (req, res) => {
+  try {
+    const locations = await prisma.location.findMany({
+      where: { type: 'STORE' },
+    });
+    res.status(200).json(locations);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get only office locations
+const getOfficeLocations = async (req, res) => {
+  try {
+    const locations = await prisma.location.findMany({
+      where: { type: 'OFFICE' },
+    });
+    res.status(200).json(locations);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllLocations,
   getLocationById,
   createLocation,
   updateLocation,
+  getStoreLocations,
+  getOfficeLocations,
 };

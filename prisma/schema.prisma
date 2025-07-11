@@ -76,13 +76,14 @@ model Store {
   updatedAt    DateTime @updatedAt
   category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  promotionStores PromotionStore[]
 }
 
 model Dining {
   id           Int      @id @default(autoincrement())
   name         String
-  category     String
-  location     String
+  categoryId   Int
+  locationId   Int
   description  String
   hours        String?
   rating       Float?
@@ -90,18 +91,28 @@ model Dining {
   isShowInHome Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 }
 
 model Promotion {
   id           Int      @id @default(autoincrement())
   title        String
   period       String?
-  stores       String?
   description  String
   imagePath    String?
   isShowInHome Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  stores       PromotionStore[]
+}
+
+model PromotionStore {
+  id           Int      @id @default(autoincrement())
+  promotionId  Int
+  storeId      Int
+  promotion    Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  store        Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
 }
 
 model About {
@@ -181,30 +192,35 @@ model HomeSetting {
   quickInfoContent String?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
-  heroImages       HeroImage[]
 }
 
-model HeroImage {
-  id            Int         @id @default(autoincrement())
-  title         String
-  description   String?
-  imagePath     String
-  orderNumber   Int         @default(0)
-  homeSettingId Int
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  homeSetting   HomeSetting @relation(fields: [homeSettingId], references: [id], onDelete: Cascade)
+model HeroSection {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  imagePath   String
+  orderNumber Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Location {
-  id                      Int     @id @default(autoincrement())
+  id                      Int           @id @default(autoincrement())
   level                   Int
-  storeNum                Int
+  number                  Int           // Generic number for both store/office
+  type                    LocationType  // STORE or OFFICE
   locationByDescription   String?
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
   stores                  Store[]
-  offices                 Office[] // Add this line for Office back-relation
+  offices                 Office[]
+  entertainmentAndSports  EntertainmentAndSport[]
+  dinings                 Dining[]
+}
+
+enum LocationType {
+  STORE
+  OFFICE
 }
 
 model Category {
@@ -213,6 +229,7 @@ model Category {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   stores       Store[]
+  dinings      Dining[]
 }
 
 model Office {
@@ -222,7 +239,7 @@ model Office {
   locationId   Int
   description  String
   area         Int             // Area in number, validated in backend
-  features     String          // Features or name/office feature
+  isShowInHome Boolean         @default(false)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   location     Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
@@ -230,9 +247,29 @@ model Office {
 }
 
 model OfficeGallery {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   imagePath String
   officeId  Int
-  office    Office  @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  office    Office   @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model EntertainmentAndSport {
+  id        Int      @id @default(autoincrement())
+  title     String
+  description String
+  area      Int?
+  locationId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  location  Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  gallery   EntertainmentAndSportGallery[]
+}
+
+model EntertainmentAndSportGallery {
+  id        Int      @id @default(autoincrement())
+  imagePath String
+  entertainmentAndSportId Int
+  entertainmentAndSport EntertainmentAndSport @relation(fields: [entertainmentAndSportId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }

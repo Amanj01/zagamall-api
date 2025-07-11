@@ -25,6 +25,9 @@ const locationRoutes = require("./src/routes/locationRoutes");
 const categoryRoutes = require("./src/routes/categoryRoutes");
 const resourceRoutes = require('./src/routes/resourceRoutes');
 const officeRoutes = require('./src/routes/officeRoutes');
+const entertainmentAndSportRoutes = require('./src/routes/entertainmentAndSportRoutes');
+const heroSectionRoutes = require('./src/routes/heroSectionRoutes');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
 
 const extractClientIp = require("./src/middlewares/clientIpMiddleware");
 
@@ -46,7 +49,7 @@ app.use("/images", express.static(path.join(__dirname, "/src/assets/images/")));
 
 app.use("/users", userRoutes); // User routes
  app.use("/password", passwordResetRoutes); // Password reset routes
- app.use("/roles", roleRoutes); // Role routes
+ app.use("/api/roles", roleRoutes); // Role routes
 app.use("/permissions", permissionsRoutes); // Permissions routes
 
 // Register new Zaga Mall routes.
@@ -65,6 +68,9 @@ app.use("/api/locations", locationRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use('/api/resource', resourceRoutes);
 app.use('/offices', officeRoutes);
+app.use('/api/entertainment-sports', entertainmentAndSportRoutes);
+app.use('/api/hero-section', heroSectionRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

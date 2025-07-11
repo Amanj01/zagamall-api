@@ -129,7 +129,7 @@ const getOfficeById = async (req, res) => {
  * @returns {object|null} error
  */
 function validateOfficeInput(body) {
-  const requiredFields = ["title", "locationId", "description", "area", "features"];
+  const requiredFields = ["title", "locationId", "description", "area"];
   for (const field of requiredFields) {
     if (!body[field]) {
       return { message: `Field '${field}' is required.` };
@@ -151,7 +151,7 @@ const createOffice = async (req, res) => {
     if (error) {
       return res.status(400).json({ status: "error", data: null, meta: null, error });
     }
-    const { title, locationId, description, area, features } = req.body;
+    const { title, locationId, description, area } = req.body;
     const image = req.files && req.files["image"] ? `/uploads/${req.files["image"][0].filename}` : null;
     let galleryImages = [];
     if (req.files && req.files["gallery"]) {
@@ -163,7 +163,6 @@ const createOffice = async (req, res) => {
         locationId: parseInt(locationId),
         description,
         area: parseInt(area),
-        features,
         image,
         gallery: { create: galleryImages },
       },
@@ -197,7 +196,7 @@ const updateOffice = async (req, res) => {
     if (error) {
       return res.status(400).json({ status: "error", data: null, meta: null, error });
     }
-    const { title, locationId, description, area, features } = req.body;
+    const { title, locationId, description, area } = req.body;
     const existingOffice = await prisma.office.findUnique({ where: { id: parseInt(id) } });
     if (!existingOffice) {
       return res.status(404).json({
@@ -220,7 +219,6 @@ const updateOffice = async (req, res) => {
         locationId: parseInt(locationId),
         description,
         area: parseInt(area),
-        features,
         image,
       },
       include: { location: true, gallery: true },
