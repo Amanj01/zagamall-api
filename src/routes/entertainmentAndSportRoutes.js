@@ -3,7 +3,7 @@ const router = express.Router();
 const { protect } = require("../middlewares/authMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
 const {
-  listEntertainmentAndSports,
+  getEntertainmentAndSports,
   getEntertainmentAndSportById,
   createEntertainmentAndSport,
   updateEntertainmentAndSport,
@@ -12,7 +12,7 @@ const {
 } = require("../controllers/entertainmentAndSportController");
 
 // List with pagination, search, filter
-router.get("/", listEntertainmentAndSports);
+router.get("/", getEntertainmentAndSports);
 // Get single by ID
 router.get("/:id", getEntertainmentAndSportById);
 // Create (with gallery images)

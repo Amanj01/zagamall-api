@@ -3,6 +3,12 @@ const bcrypt = require("bcrypt");
 const { generateToken, verifyToken } = require("../utils/jwt");
 const emailService = require("../email/emailService");
 
+// Helper: strong password policy
+function isStrongPassword(password) {
+  // At least 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(password);
+}
+
 // Register a new user
 const registerUser = async (req, res) => {
   try {
@@ -13,6 +19,13 @@ const registerUser = async (req, res) => {
       return res.status(400).json({
         message: "Missing required fields",
         required: ["name", "email", "username", "password", "role_id"],
+      });
+    }
+
+    // Enforce strong password
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
       });
     }
 
@@ -178,7 +191,17 @@ const updateUser = async (req, res) => {
 
     let hashedPassword;
     if (password) {
+      if (!isStrongPassword(password)) {
+        return res.status(400).json({
+          message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+        });
+      }
       hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    // Only super_admin can update roles
+    if (role_id && req.user.role !== 'super_admin') {
+      return res.status(403).json({ message: "Only super_admin can update user roles." });
     }
 
     if (role_id) {
@@ -197,7 +220,7 @@ const updateUser = async (req, res) => {
         name,
         email,
         username,
-        ...(role_id && { role: { connect: { id: parseInt(role_id) } } }),
+        ...(role_id && req.user.role === 'super_admin' && { role: { connect: { id: parseInt(role_id) } } }),
         ...(hashedPassword && { password: hashedPassword }),
       },
     });

@@ -3,6 +3,12 @@ const path = require("path");
 const { getDMMF } = require("@prisma/internals");
 const cloudinary = require('cloudinary').v2;
 
+// Debug: Check if environment variables are loaded
+console.log('🔍 Cloudinary Config Debug:');
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ Set' : '❌ Missing');
+console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ Set' : '❌ Missing');
+console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ Set' : '❌ Missing');
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -51,6 +57,36 @@ const deleteCloudinaryImage = async (imageUrl) => {
     console.log('Cloudinary destroy result:', result);
   } catch (err) {
     console.error(`Failed to delete Cloudinary image: ${imageUrl} - ${err.message}`);
+  }
+};
+
+/**
+ * Upload a file to Cloudinary and return the secure URL
+ * @param {string|Buffer} filePathOrBuffer - Can be a file path, buffer, or data URI
+ * @param {string} folder
+ * @returns {Promise<string>}
+ */
+const uploadToCloudinary = async (filePathOrBuffer, folder = 'offices') => {
+  try {
+    let uploadOptions = {
+      folder,
+      resource_type: 'image',
+    };
+
+    // If it's a buffer, we need to convert it to a data URI
+    if (Buffer.isBuffer(filePathOrBuffer)) {
+      const base64 = filePathOrBuffer.toString('base64');
+      const dataURI = `data:image/png;base64,${base64}`;
+      const result = await cloudinary.uploader.upload(dataURI, uploadOptions);
+      return result.secure_url;
+    }
+
+    // If it's a file path, upload directly
+    const result = await cloudinary.uploader.upload(filePathOrBuffer, uploadOptions);
+    return result.secure_url;
+  } catch (err) {
+    console.error('Cloudinary upload error:', err);
+    throw err;
   }
 };
 
@@ -112,4 +148,10 @@ async function getRelations(modelName, dmmf = null, memo = new Set()) {
   return includeRelations;
 }
 
-module.exports = { isBeforeHoursAgo, deleteFile, getRelations, deleteCloudinaryImage };
+module.exports = {
+  isBeforeHoursAgo,
+  deleteFile,
+  getRelations,
+  deleteCloudinaryImage,
+  uploadToCloudinary, // <-- add this
+};

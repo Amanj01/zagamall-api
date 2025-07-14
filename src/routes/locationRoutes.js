@@ -1,25 +1,24 @@
 const express = require("express");
 const { protect } = require("../middlewares/authMiddleware");
-const paginationMiddleware = require("../middlewares/paginationMiddleware");
-const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 const { 
   getAllLocations,
   getLocationById, 
   createLocation, 
-  updateLocation, 
-  getStoreLocations,
-  getOfficeLocations
+  updateLocation,
+  deleteLocation,
+  getLocationsByType
 } = require("../controllers/locationController");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("location"));
-router.get("/all", getAllLocations);
-router.get("/stores", getStoreLocations);
-router.get("/offices", getOfficeLocations);
+// Public routes
+router.get("/", getAllLocations);
+router.get("/type/:type", getLocationsByType);
 router.get("/:id", getLocationById);
+
+// Protected routes
 router.post("/", protect, createLocation);
 router.put("/:id", protect, updateLocation);
-router.delete("/:id", protect, deleteRecordMiddleware("location"));
+router.delete("/:id", protect, deleteLocation);
 
 module.exports = router;

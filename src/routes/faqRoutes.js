@@ -8,12 +8,16 @@ const {
   getFaqById, 
   createFaq, 
   updateFaq, 
-  deleteFaq
+  deleteFaq,
+  getFaqCategories,
+  getFaqsByCategory
 } = require("../controllers/faqController");
 
 const router = express.Router();
 
 router.get("/", getAllFaqs);
+router.get("/categories", getFaqCategories);
+router.get("/category/:category", getFaqsByCategory);
 router.get("/:id", getFaqById);
 router.post("/", createFaq);
 router.put("/:id", updateFaq);

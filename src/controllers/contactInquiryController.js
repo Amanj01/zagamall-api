@@ -1,15 +1,60 @@
 const prisma = require("../prisma");
 const emailService = require("../email/emailService");
 
-// Get all contact inquiries
+// Get all contact inquiries with pagination
 const getAllContactInquiries = async (req, res) => {
   try {
+    const {
+      page = 1,
+      pageSize = 10,
+      sortBy = "createdAt",
+      sortOrder = "desc"
+    } = req.query;
+
+    const pageNumber = parseInt(page);
+    const limit = parseInt(pageSize);
+    const skip = (pageNumber - 1) * limit;
+
+    // Get total count for pagination
+    const totalCount = await prisma.contactInquiry.count();
+
+    // Get inquiries with pagination
     const inquiries = await prisma.contactInquiry.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { [sortBy]: sortOrder },
+      skip: skip,
+      take: limit,
     });
-    res.status(200).json(inquiries);
+
+    // Calculate pagination meta
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = pageNumber < totalPages;
+    const hasPreviousPage = pageNumber > 1;
+
+    // Build meta information
+    const meta = {
+      currentPage: pageNumber,
+      totalPages,
+      totalCount,
+      pageSize: limit,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage: hasNextPage ? pageNumber + 1 : null,
+      previousPage: hasPreviousPage ? pageNumber - 1 : null
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Contact inquiries retrieved successfully",
+      data: inquiries,
+      meta
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error in getAllContactInquiries:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to fetch contact inquiries",
+      error: error.message 
+    });
   }
 };
 

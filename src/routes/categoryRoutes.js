@@ -11,8 +11,7 @@ const {
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("category"));
-router.get("/all", getAllCategories);
+router.get("/", getAllCategories);
 router.get("/:id", getCategoryById);
 router.post("/", protect, createCategory);
 router.put("/:id", protect, updateCategory);

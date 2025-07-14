@@ -12,11 +12,10 @@ const {
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("store", ["category", "location", "isShowInHome"], { include: { category: true, location: true } }));
-router.get("/all", getAllStores);
+router.get("/", getAllStores);
 router.get("/:id", getStoreById);
-router.post("/", upload.single("image"), protect, createStore);
-router.put("/:id", upload.single("image"), protect, updateStore);
+router.post("/", protect, createStore);
+router.put("/:id", protect, updateStore);
 router.delete("/:id", protect, deleteRecordMiddleware("store"));
 
 module.exports = router;

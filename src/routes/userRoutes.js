@@ -8,32 +8,42 @@ const {
   updateUser,
   me,
 } = require("../controllers/userController");
-const { protect } = require("../middlewares/authMiddleware");
+const { protect, requireRole } = require("../middlewares/authMiddleware");
 const paginationMiddleware = require("../middlewares/paginationMiddleware");
 const deleteRecordMiddleware = require("../middlewares/deleteMiddleware");
 
 const router = express.Router();
 
-// Register a new user (only admins can create new users)
-router.post("/register", upload.none(), protect, registerUser);
+// Register a new user (only super_admin can create new users)
+router.post("/register", upload.none(), protect, requireRole(["super_admin"]), registerUser);
 
+// Login
 router.post("/login", upload.none(), loginUser);
 
+// Get all users (admin/super_admin only)
 router.get(
   "/",
   protect,
+  requireRole(["admin", "super_admin"]),
   paginationMiddleware("user", [], {
     include: { role: true },
     omit: { password: true, updatedAt: true },
   })
 );
 
+// Get current user info (all roles)
 router.get("/auth/me", protect, me);
 
-router.get("/:id", protect, getUserById);
+// Get a specific user by ID (admin/super_admin only)
+router.get("/:id", protect, requireRole(["admin", "super_admin"]), getUserById);
 
-router.put("/:id", upload.none(), protect, updateUser);
-
-router.delete("/:id", protect, deleteRecordMiddleware("user"));
+// Update user (admin/super_admin only, but only super_admin can update roles)
+router.put(
+  "/:id",
+  upload.none(),
+  protect,
+  requireRole(["admin", "super_admin"]),
+  updateUser
+);
 
 module.exports = router;

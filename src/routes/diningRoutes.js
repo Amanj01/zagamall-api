@@ -7,16 +7,16 @@ const {
   getAllDinings,
   getDiningById, 
   createDining, 
-  updateDining 
+  updateDining,
+  deleteDining
 } = require("../controllers/diningController");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("dining", ["category", "isShowInHome"]));
-router.get("/all", getAllDinings);
+router.get("/", getAllDinings);
 router.get("/:id", getDiningById);
-router.post("/", upload.single("image"), protect, createDining);
-router.put("/:id", upload.single("image"), protect, updateDining);
-router.delete("/:id", protect, deleteRecordMiddleware("dining"));
+router.post("/", protect, upload.single('imagePath'), createDining);
+router.put("/:id", protect, upload.single('imagePath'), updateDining);
+router.delete("/:id", protect, deleteDining);
 
 module.exports = router;

@@ -1,254 +1,407 @@
 const prisma = require("../prisma");
-const { deleteCloudinaryImage } = require("../utils/utility");
+const { deleteCloudinaryImage, uploadToCloudinary, deleteFile } = require("../utils/utility");
 
-// Constants
-const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_SIZE = 10;
-const ALLOWED_SORT_FIELDS = ["createdAt", "title", "area"];
-
-function parseQueryParams(query) {
-  const page = Math.max(parseInt(query.page) || DEFAULT_PAGE, 1);
-  const pageSize = Math.max(parseInt(query.pageSize) || DEFAULT_PAGE_SIZE, 1);
-  const sortBy = ALLOWED_SORT_FIELDS.includes(query.sortBy) ? query.sortBy : "createdAt";
-  const order = query.order === "desc" ? "desc" : "asc";
-  return { page, pageSize, sortBy, order };
-}
-
-function buildWhere(query) {
-  const where = {};
-  if (query.title) {
-    where.title = { contains: query.title, mode: "insensitive" };
-  }
-  if (query.description) {
-    where.description = { contains: query.description, mode: "insensitive" };
-  }
-  if (query.locationId) {
-    where.locationId = parseInt(query.locationId);
-  }
-  if (query.area) {
-    where.area = parseInt(query.area);
-  }
-  return where;
-}
-
-const listEntertainmentAndSports = async (req, res) => {
+// Get all entertainment and sports with pagination, search, and meta
+const getEntertainmentAndSports = async (req, res) => {
   try {
-    const { page, pageSize, sortBy, order } = parseQueryParams(req.query);
-    const where = buildWhere(req.query);
-    const [total, items] = await Promise.all([
-      prisma.entertainmentAndSport.count({ where }),
-      prisma.entertainmentAndSport.findMany({
-        where,
-        include: { location: true, gallery: true },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        orderBy: { [sortBy]: order },
-      })
-    ]);
-    return res.status(200).json({
-      status: "success",
-      data: items,
-      meta: {
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize),
-      },
-      error: null
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      sortBy = "createdAt",
+      sortOrder = "desc"
+    } = req.query;
+
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+    const skip = (pageNumber - 1) * pageSize;
+
+    // Build where clause for search
+    const whereClause = {};
+    if (search) {
+      whereClause.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+
+    // Build order by clause
+    const orderBy = {};
+    orderBy[sortBy] = sortOrder;
+
+    // Get total count for pagination
+    const totalCount = await prisma.entertainmentAndSport.count({
+      where: whereClause
+    });
+
+    // Get entertainment and sports with pagination
+    const entertainmentAndSports = await prisma.entertainmentAndSport.findMany({
+      where: whereClause,
+      include: { location: true, gallery: true },
+      orderBy: orderBy,
+      skip: skip,
+      take: pageSize,
+    });
+
+    // Calculate pagination meta
+    const totalPages = Math.ceil(totalCount / pageSize);
+    const hasNextPage = pageNumber < totalPages;
+    const hasPreviousPage = pageNumber > 1;
+
+    // Build meta information
+    const meta = {
+      currentPage: pageNumber,
+      totalPages,
+      totalCount,
+      pageSize,
+      hasNextPage,
+      hasPreviousPage,
+      nextPage: hasNextPage ? pageNumber + 1 : null,
+      previousPage: hasPreviousPage ? pageNumber - 1 : null
+    };
+
+    // Build links for HATEOAS
+    const baseUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}`;
+    const links = {
+      self: `${baseUrl}?page=${pageNumber}&limit=${pageSize}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+      first: `${baseUrl}?page=1&limit=${pageSize}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+      last: `${baseUrl}?page=${totalPages}&limit=${pageSize}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+      next: hasNextPage ? `${baseUrl}?page=${pageNumber + 1}&limit=${pageSize}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}` : null,
+      prev: hasPreviousPage ? `${baseUrl}?page=${pageNumber - 1}&limit=${pageSize}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}` : null
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Entertainment and sports retrieved successfully",
+      data: entertainmentAndSports,
+      meta,
+      links
     });
   } catch (error) {
-    console.error("[EntertainmentAndSportController] list error:", error);
-    return res.status(500).json({
-      status: "error",
-      data: null,
-      meta: null,
-      error: { message: "Failed to fetch items", details: error.message }
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch entertainment and sports",
+      error: error.message
     });
   }
 };
 
+// Get single entertainment and sport by ID
 const getEntertainmentAndSportById = async (req, res) => {
   try {
     const { id } = req.params;
-    const item = await prisma.entertainmentAndSport.findUnique({
-      where: { id: parseInt(id) },
-      include: { location: true, gallery: true },
-    });
-    if (!item) {
-      return res.status(404).json({
-        status: "error",
-        data: null,
-        meta: null,
-        error: { message: "Not found" }
+    const entertainmentAndSportId = parseInt(id);
+
+    if (isNaN(entertainmentAndSportId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid entertainment and sport ID"
       });
     }
-    return res.status(200).json({
-      status: "success",
-      data: item,
-      meta: null,
-      error: null
+
+    const entertainmentAndSport = await prisma.entertainmentAndSport.findUnique({
+      where: { id: entertainmentAndSportId },
+      include: { location: true, gallery: true }
+    });
+
+    if (!entertainmentAndSport) {
+      return res.status(404).json({
+        success: false,
+        message: "Entertainment and sport not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Entertainment and sport retrieved successfully",
+      data: entertainmentAndSport
     });
   } catch (error) {
-    console.error("[EntertainmentAndSportController] getById error:", error);
-    return res.status(500).json({
-      status: "error",
-      data: null,
-      meta: null,
-      error: { message: "Failed to fetch item", details: error.message }
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch entertainment and sport",
+      error: error.message
     });
   }
 };
 
-function validateInput(body) {
-  const requiredFields = ["title", "locationId", "description"];
-  for (const field of requiredFields) {
-    if (!body[field]) {
-      return { message: `Field '${field}' is required.` };
-    }
-  }
-  return null;
-}
-
+// Create new entertainment and sport
 const createEntertainmentAndSport = async (req, res) => {
   try {
-    const error = validateInput(req.body);
-    if (error) {
-      return res.status(400).json({ status: "error", data: null, meta: null, error });
+    const { title, description, locationId, area } = req.body;
+
+    // Validation
+    if (!title || title.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Title is required and cannot be empty"
+      });
     }
-    const { title, locationId, description, area, gallery } = req.body;
-    // gallery: array of Cloudinary URL strings
+
+    if (!locationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Location is required"
+      });
+    }
+
+    if (title.length > 255) {
+      return res.status(400).json({
+        success: false,
+        message: "Title cannot exceed 255 characters"
+      });
+    }
+
+    if (description && description.length > 1000) {
+      return res.status(400).json({
+        success: false,
+        message: "Description cannot exceed 1000 characters"
+      });
+    }
+
+    // Handle file uploads to Cloudinary
     let galleryImages = [];
-    if (Array.isArray(gallery)) {
-      galleryImages = gallery.map(url => ({ imagePath: url }));
+    if (req.files && req.files.gallery) {
+      try {
+        const files = Array.isArray(req.files.gallery) ? req.files.gallery : [req.files.gallery];
+        
+        for (const file of files) {
+          console.log('📤 Uploading gallery image to Cloudinary...');
+          const imageUrl = await uploadToCloudinary(file.buffer, 'entertainment-sports');
+          console.log('✅ Gallery image uploaded to Cloudinary:', imageUrl);
+          
+          galleryImages.push({ imagePath: imageUrl });
+        }
+      } catch (uploadError) {
+        console.error('❌ Cloudinary upload failed:', uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload images to Cloudinary"
+        });
+      }
     }
-    const item = await prisma.entertainmentAndSport.create({
+
+    const entertainmentAndSport = await prisma.entertainmentAndSport.create({
       data: {
-        title,
+        title: title.trim(),
+        description: description ? description.trim() : null,
         locationId: parseInt(locationId),
-        description,
         area: area ? parseInt(area) : null,
-        gallery: { create: galleryImages },
+        gallery: { create: galleryImages }
       },
-      include: { location: true, gallery: true },
+      include: { location: true, gallery: true }
     });
-    return res.status(201).json({
-      status: "success",
-      data: item,
-      meta: null,
-      error: null
+
+    res.status(201).json({
+      success: true,
+      message: "Entertainment and sport created successfully",
+      data: entertainmentAndSport
     });
   } catch (error) {
-    console.error("[EntertainmentAndSportController] create error:", error);
-    return res.status(500).json({
-      status: "error",
-      data: null,
-      meta: null,
-      error: { message: "Failed to create item", details: error.message }
+    console.error('❌ Error creating entertainment and sport:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create entertainment and sport",
+      error: error.message
     });
   }
 };
 
+// Update entertainment and sport
 const updateEntertainmentAndSport = async (req, res) => {
   try {
     const { id } = req.params;
-    const error = validateInput(req.body);
-    if (error) {
-      return res.status(400).json({ status: "error", data: null, meta: null, error });
+    const entertainmentAndSportId = parseInt(id);
+    const { title, description, locationId, area } = req.body;
+
+    if (isNaN(entertainmentAndSportId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid entertainment and sport ID"
+      });
     }
-    const { title, locationId, description, area, gallery } = req.body;
-    const existing = await prisma.entertainmentAndSport.findUnique({ where: { id: parseInt(id) }, include: { gallery: true } });
-    if (!existing) {
-      return res.status(404).json({ status: "error", data: null, meta: null, error: { message: "Not found" } });
+
+    // Check if entertainment and sport exists
+    const existingEntertainmentAndSport = await prisma.entertainmentAndSport.findUnique({
+      where: { id: entertainmentAndSportId },
+      include: { gallery: true }
+    });
+
+    if (!existingEntertainmentAndSport) {
+      return res.status(404).json({
+        success: false,
+        message: "Entertainment and sport not found"
+      });
     }
-    // Delete removed gallery images from Cloudinary
-    if (Array.isArray(gallery)) {
-      const oldGallery = existing.gallery.map(g => g.imagePath);
-      const removed = oldGallery.filter(url => !gallery.includes(url));
-      for (const url of removed) {
-        await deleteCloudinaryImage(url);
+
+    // Handle file uploads to Cloudinary
+    let galleryImages = [];
+    if (req.files && req.files.gallery) {
+      try {
+        const files = Array.isArray(req.files.gallery) ? req.files.gallery : [req.files.gallery];
+        
+        for (const file of files) {
+          console.log('📤 Uploading new gallery image to Cloudinary...');
+          const imageUrl = await uploadToCloudinary(file.buffer, 'entertainment-sports');
+          console.log('✅ New gallery image uploaded to Cloudinary:', imageUrl);
+          
+          galleryImages.push({ imagePath: imageUrl });
+        }
+      } catch (uploadError) {
+        console.error('❌ Cloudinary upload failed:', uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to upload images to Cloudinary"
+        });
+      }
+    }
+
+    // Delete old gallery images from Cloudinary if new ones are uploaded
+    if (galleryImages.length > 0) {
+      for (const img of existingEntertainmentAndSport.gallery) {
+        if (img.imagePath) {
+          await deleteCloudinaryImage(img.imagePath);
+        }
       }
       // Remove old gallery images from DB
-      await prisma.entertainmentAndSportGallery.deleteMany({ where: { entertainmentAndSportId: parseInt(id), imagePath: { in: removed } } });
-      // Add new gallery images
-      const newImages = gallery.filter(url => !oldGallery.includes(url)).map(url => ({ imagePath: url, entertainmentAndSportId: parseInt(id) }));
-      if (newImages.length > 0) {
-        await prisma.entertainmentAndSportGallery.createMany({ data: newImages });
-      }
+      await prisma.entertainmentAndSportGallery.deleteMany({
+        where: { entertainmentAndSportId: entertainmentAndSportId }
+      });
     }
-    const updated = await prisma.entertainmentAndSport.update({
-      where: { id: parseInt(id) },
+
+    const updatedEntertainmentAndSport = await prisma.entertainmentAndSport.update({
+      where: { id: entertainmentAndSportId },
       data: {
-        title,
-        locationId: parseInt(locationId),
-        description,
-        area: area ? parseInt(area) : null,
+        title: title ? title.trim() : existingEntertainmentAndSport.title,
+        description: description ? description.trim() : existingEntertainmentAndSport.description,
+        locationId: locationId ? parseInt(locationId) : existingEntertainmentAndSport.locationId,
+        area: area ? parseInt(area) : existingEntertainmentAndSport.area,
+        ...(galleryImages.length > 0 && { gallery: { create: galleryImages } })
       },
-      include: { location: true, gallery: true },
+      include: { location: true, gallery: true }
     });
-    return res.status(200).json({
-      status: "success",
-      data: updated,
-      meta: null,
-      error: null
+
+    res.status(200).json({
+      success: true,
+      message: "Entertainment and sport updated successfully",
+      data: updatedEntertainmentAndSport
     });
   } catch (error) {
-    console.error("[EntertainmentAndSportController] update error:", error);
-    return res.status(500).json({
-      status: "error",
-      data: null,
-      meta: null,
-      error: { message: "Failed to update item", details: error.message }
+    console.error('❌ Error updating entertainment and sport:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update entertainment and sport",
+      error: error.message
     });
   }
 };
 
+// Delete entertainment and sport
 const deleteEntertainmentAndSport = async (req, res) => {
   try {
     const { id } = req.params;
-    const item = await prisma.entertainmentAndSport.findUnique({ where: { id: parseInt(id) }, include: { gallery: true } });
-    if (!item) {
-      return res.status(404).json({ status: "error", data: null, meta: null, error: { message: "Not found" } });
+    const entertainmentAndSportId = parseInt(id);
+
+    if (isNaN(entertainmentAndSportId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid entertainment and sport ID"
+      });
     }
-    for (const img of item.gallery) {
-      if (img.imagePath) await deleteCloudinaryImage(img.imagePath);
+
+    const entertainmentAndSport = await prisma.entertainmentAndSport.findUnique({
+      where: { id: entertainmentAndSportId },
+      include: { gallery: true }
+    });
+
+    if (!entertainmentAndSport) {
+      return res.status(404).json({
+        success: false,
+        message: "Entertainment and sport not found"
+      });
     }
-    await prisma.entertainmentAndSportGallery.deleteMany({ where: { entertainmentAndSportId: item.id } });
-    await prisma.entertainmentAndSport.delete({ where: { id: item.id } });
-    return res.status(200).json({ status: "success", message: "Deleted successfully" });
+
+    // Delete gallery images from Cloudinary
+    for (const img of entertainmentAndSport.gallery) {
+      if (img.imagePath) {
+        await deleteCloudinaryImage(img.imagePath);
+      }
+    }
+
+    // Delete gallery images from DB
+    await prisma.entertainmentAndSportGallery.deleteMany({
+      where: { entertainmentAndSportId: entertainmentAndSportId }
+    });
+
+    // Delete the entertainment and sport
+    await prisma.entertainmentAndSport.delete({
+      where: { id: entertainmentAndSportId }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Entertainment and sport deleted successfully"
+    });
   } catch (error) {
-    console.error("[EntertainmentAndSportController] delete error:", error);
-    return res.status(500).json({
-      status: "error",
-      data: null,
-      meta: null,
-      error: { message: "Failed to delete item", details: error.message }
+    console.error('❌ Error deleting entertainment and sport:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete entertainment and sport",
+      error: error.message
     });
   }
 };
 
+// Delete gallery image
 const deleteEntertainmentAndSportGalleryImage = async (req, res) => {
   try {
     const { id } = req.params;
-    const galleryImage = await prisma.entertainmentAndSportGallery.findUnique({ where: { id: parseInt(id) } });
-    if (!galleryImage) {
-      return res.status(404).json({ status: "error", data: null, meta: null, error: { message: "Gallery image not found" } });
+    const galleryImageId = parseInt(id);
+
+    if (isNaN(galleryImageId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid gallery image ID"
+      });
     }
-    if (galleryImage.imagePath) await deleteCloudinaryImage(galleryImage.imagePath);
-    await prisma.entertainmentAndSportGallery.delete({ where: { id: galleryImage.id } });
-    return res.status(200).json({ status: "success", message: "Gallery image deleted successfully" });
+
+    const galleryImage = await prisma.entertainmentAndSportGallery.findUnique({
+      where: { id: galleryImageId }
+    });
+
+    if (!galleryImage) {
+      return res.status(404).json({
+        success: false,
+        message: "Gallery image not found"
+      });
+    }
+
+    // Delete from Cloudinary
+    if (galleryImage.imagePath) {
+      await deleteCloudinaryImage(galleryImage.imagePath);
+    }
+
+    // Delete from DB
+    await prisma.entertainmentAndSportGallery.delete({
+      where: { id: galleryImageId }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Gallery image deleted successfully"
+    });
   } catch (error) {
-    console.error("[EntertainmentAndSportController] deleteGalleryImage error:", error);
-    return res.status(500).json({
-      status: "error",
-      data: null,
-      meta: null,
-      error: { message: "Failed to delete gallery image", details: error.message }
+    console.error('❌ Error deleting gallery image:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete gallery image",
+      error: error.message
     });
   }
 };
 
 module.exports = {
-  listEntertainmentAndSports,
+  getEntertainmentAndSports,
   getEntertainmentAndSportById,
   createEntertainmentAndSport,
   updateEntertainmentAndSport,

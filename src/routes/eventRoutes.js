@@ -1,6 +1,7 @@
 const express = require("express");
 const upload = require("../middlewares/uploadMiddleware");
 const {
+  getEvents,
   getEventById,
   createEvent,
   updateEvent,
@@ -14,24 +15,18 @@ const router = express.Router();
 
 router.get(
   "/",
-  paginationMiddleware("event")
+  getEvents
 );
 
 router.get("/:id", getEventById);
 
 router.post(
   "/",
-  upload.fields([
-    { name: "coverImage", maxCount: 1 },
-  ]),
   protect,
   createEvent
 );
 router.put(
   "/:id",
-  upload.fields([
-    { name: "coverImage", maxCount: 1 },
-  ]),
   protect,
   updateEvent
 );

@@ -1,18 +1,56 @@
 const prisma = require("../prisma");
 
-// Get comprehensive dashboard statistics for events, stores, and offices
+// Get comprehensive dashboard statistics for events, stores, offices, users, brands, etc.
 const getDashboardStats = async (req, res) => {
   try {
-    // Get counts for the three entities
+    // Use a single query to get all counts efficiently
     const [
       storesCount,
       eventsCount,
-      officesCount
+      officesCount,
+      usersCount,
+      brandsCount,
+      categoriesCount,
+      diningCount,
+      promotionsCount,
+      teamMembersCount,
+      inquiriesCount,
+      faqCount,
+      faqCategoryCount
     ] = await Promise.all([
       prisma.store.count(),
       prisma.event.count(),
-      prisma.office.count()
+      prisma.office.count(),
+      prisma.user.count(),
+      prisma.brand.count(),
+      prisma.category.count(),
+      prisma.dining.count(),
+      prisma.promotion.count(),
+      prisma.teamMember.count(),
+      prisma.contactInquiry.count(),
+      prisma.FAQ.count(),
+      prisma.FAQCategory.count()
     ]);
+
+    // Get admin counts in a separate query to avoid complex joins
+    const [adminsCount, superAdminsCount] = await Promise.all([
+      prisma.user.count({ where: { role: { name: 'admin' } } }),
+      prisma.user.count({ where: { role: { name: 'super_admin' } } })
+    ]);
+
+    // Get recent user registrations and inquiries
+    const [recentUsers, recentInquiries] = await Promise.all([
+      prisma.user.findMany({ orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, name: true, email: true, createdAt: true, role: true } }),
+      prisma.contactInquiry.findMany({ orderBy: { createdAt: 'desc' }, take: 5 })
+    ]);
+
+    // Get about info, facts, values
+    const aboutInfo = await prisma.about.findFirst({
+      include: {
+        ourValues: true,
+        factsAndFigures: true
+      }
+    });
 
     // Get detailed recent activities with full information
     const recentActivities = await Promise.all([
@@ -121,8 +159,24 @@ const getDashboardStats = async (req, res) => {
         counts: {
           stores: storesCount,
           events: eventsCount,
-          offices: officesCount
+          offices: officesCount,
+          users: usersCount,
+          admins: adminsCount,
+          superAdmins: superAdminsCount,
+          brands: brandsCount,
+          categories: categoriesCount,
+          dining: diningCount,
+          promotions: promotionsCount,
+          teamMembers: teamMembersCount,
+          inquiries: inquiriesCount,
+          faqs: faqCount,
+          faqCategories: faqCategoryCount
         },
+        recent: {
+          users: recentUsers,
+          inquiries: recentInquiries
+        },
+        about: aboutInfo,
         growth: {
           stores: storesGrowth,
           events: eventsGrowth,

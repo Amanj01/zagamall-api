@@ -12,7 +12,7 @@ const {
 
 const router = express.Router();
 
-router.get("/", protect, paginationMiddleware("contactInquiry"));
+router.get("/", protect, getAllContactInquiries);
 router.get("/all", protect, getAllContactInquiries);
 router.get("/:id", protect, getContactInquiryById);
 router.post("/submit", upload.none(), submitContactInquiry);
