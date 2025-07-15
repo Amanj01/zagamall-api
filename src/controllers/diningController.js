@@ -157,12 +157,24 @@ const createDining = async (req, res) => {
       });
     }
 
-    // Validate category exists
-    const category = await prisma.diningCategory.findUnique({ where: { id: parseInt(diningCategoryId) } });
-    if (!category) {
+    // Validate dining category exists
+    const diningCategory = await prisma.diningCategory.findUnique({ where: { id: parseInt(diningCategoryId) } });
+    if (!diningCategory) {
       return res.status(400).json({ 
         success: false, 
-        message: "Selected category does not exist" 
+        message: "Selected dining category does not exist" 
+      });
+    }
+
+    // Get or create a regular category for dining
+    let regularCategory = await prisma.category.findFirst({ 
+      where: { categoryName: { contains: 'Dining', mode: 'insensitive' } } 
+    });
+    
+    if (!regularCategory) {
+      // Create a default dining category if it doesn't exist
+      regularCategory = await prisma.category.create({
+        data: { categoryName: 'Dining' }
       });
     }
 
@@ -245,12 +257,12 @@ const createDining = async (req, res) => {
     const dining = await prisma.dining.create({
       data: {
         name: name.trim(),
+        categoryId: regularCategory.id, // Use the regular category ID
         diningCategoryId: diningCategoryId ? parseInt(diningCategoryId) : null,
         locationId: locationId ? parseInt(locationId) : null,
         description: description ? description.trim() : '',
-        openingTime: openingTime || null,
-        closingTime: closingTime || null,
-        rating: rating !== undefined ? rating : null,
+        hours: openingTime && closingTime ? `${openingTime} - ${closingTime}` : null,
+        rating: rating !== undefined ? parseFloat(rating) : null,
         imagePath: finalImagePath,
         isShowInHome: isShowInHome === "true" || isShowInHome === true,
       },
@@ -301,13 +313,13 @@ const updateDining = async (req, res) => {
       });
     }
     
-    // Validate category exists if being updated
+    // Validate dining category exists if being updated
     if (diningCategoryId) {
-      const category = await prisma.diningCategory.findUnique({ where: { id: parseInt(diningCategoryId) } });
-      if (!category) {
+      const diningCategory = await prisma.diningCategory.findUnique({ where: { id: parseInt(diningCategoryId) } });
+      if (!diningCategory) {
         return res.status(400).json({ 
           success: false, 
-          message: "Selected category does not exist" 
+          message: "Selected dining category does not exist" 
         });
       }
     }
@@ -410,7 +422,10 @@ const updateDining = async (req, res) => {
     // Prepare update data
     const updateData = {};
     if (name !== undefined) updateData.name = name.trim();
-    if (diningCategoryId !== undefined) updateData.diningCategoryId = parseInt(diningCategoryId);
+    if (diningCategoryId !== undefined) {
+      updateData.diningCategoryId = parseInt(diningCategoryId);
+      // Keep the existing categoryId for regular category relationship
+    }
     if (locationId !== undefined) updateData.locationId = parseInt(locationId);
     if (description !== undefined) updateData.description = description ? description.trim() : '';
     if (openingTime !== undefined) updateData.openingTime = openingTime;

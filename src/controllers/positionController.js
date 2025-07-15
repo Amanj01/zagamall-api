@@ -19,8 +19,7 @@ const getPositions = async (req, res) => {
     const whereClause = {};
     if (search) {
       whereClause.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search, mode: 'insensitive' } }
       ];
     }
 
@@ -125,7 +124,7 @@ const getPositionById = async (req, res) => {
 // Create new position
 const createPosition = async (req, res) => {
   try {
-    const { name, description, isActive = true } = req.body;
+    const { name } = req.body;
 
     // Validation
     if (!name || name.trim().length === 0) {
@@ -139,13 +138,6 @@ const createPosition = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Name cannot exceed 255 characters"
-      });
-    }
-
-    if (description && description.length > 1000) {
-      return res.status(400).json({
-        success: false,
-        message: "Description cannot exceed 1000 characters"
       });
     }
 
@@ -163,9 +155,7 @@ const createPosition = async (req, res) => {
 
     const position = await prisma.position.create({
       data: {
-        name: name.trim(),
-        description: description ? description.trim() : null,
-        isActive: Boolean(isActive)
+        name: name.trim()
       }
     });
 
@@ -195,7 +185,7 @@ const updatePosition = async (req, res) => {
   try {
     const { id } = req.params;
     const positionId = parseInt(id);
-    const { name, description, isActive } = req.body;
+    const { name } = req.body;
 
     if (isNaN(positionId)) {
       return res.status(400).json({
@@ -231,12 +221,7 @@ const updatePosition = async (req, res) => {
       });
     }
 
-    if (description && description.length > 1000) {
-      return res.status(400).json({
-        success: false,
-        message: "Description cannot exceed 1000 characters"
-      });
-    }
+
 
     // Check if name already exists (excluding current position)
     if (name && name.trim() !== existingPosition.name) {
@@ -258,9 +243,7 @@ const updatePosition = async (req, res) => {
     const updatedPosition = await prisma.position.update({
       where: { id: positionId },
       data: {
-        name: name ? name.trim() : existingPosition.name,
-        description: description !== undefined ? (description ? description.trim() : null) : existingPosition.description,
-        isActive: isActive !== undefined ? Boolean(isActive) : existingPosition.isActive
+        name: name ? name.trim() : existingPosition.name
       }
     });
 
@@ -339,22 +322,20 @@ const deletePosition = async (req, res) => {
   }
 };
 
-// Get all active positions (for dropdowns)
+// Get all positions (for dropdowns)
 const getActivePositions = async (req, res) => {
   try {
     const positions = await prisma.position.findMany({
-      where: { isActive: true },
       orderBy: { name: 'asc' },
       select: {
         id: true,
-        name: true,
-        description: true
+        name: true
       }
     });
 
     res.status(200).json({
       success: true,
-      message: "Active positions retrieved successfully",
+      message: "Positions retrieved successfully",
       data: positions
     });
   } catch (error) {

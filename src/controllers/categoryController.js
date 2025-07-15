@@ -96,12 +96,24 @@ const getCategoryById = async (req, res) => {
     });
 
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Category not found" 
+      });
     }
 
-    res.status(200).json(category);
+    res.status(200).json({
+      success: true,
+      message: "Category retrieved successfully",
+      data: category
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching category:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to fetch category",
+      error: error.message 
+    });
   }
 };
 
@@ -110,15 +122,48 @@ const createCategory = async (req, res) => {
   try {
     const { categoryName } = req.body;
 
+    if (!categoryName || categoryName.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required"
+      });
+    }
+
+    // Check if category name already exists
+    const existingCategory = await prisma.category.findFirst({
+      where: { 
+        categoryName: { 
+          equals: categoryName.trim(), 
+          mode: 'insensitive' 
+        } 
+      }
+    });
+
+    if (existingCategory) {
+      return res.status(400).json({
+        success: false,
+        message: `Category "${categoryName}" already exists. Please choose a different name.`
+      });
+    }
+
     const category = await prisma.category.create({
       data: {
-        categoryName,
+        categoryName: categoryName.trim(),
       },
     });
 
-    res.status(201).json({ message: "Category created successfully", category });
+    res.status(201).json({ 
+      success: true,
+      message: "Category created successfully", 
+      data: category 
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error creating category:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to create category",
+      error: error.message 
+    });
   }
 };
 
@@ -128,27 +173,61 @@ const updateCategory = async (req, res) => {
     const { id } = req.params;
     const { categoryName } = req.body;
 
+    if (!categoryName || categoryName.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required"
+      });
+    }
+
     const existingCategory = await prisma.category.findUnique({
       where: { id: parseInt(id) },
     });
 
     if (!existingCategory) {
-      return res.status(404).json({ message: "Category not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Category not found" 
+      });
+    }
+
+    // Check if the new category name already exists (excluding current category)
+    const duplicateCategory = await prisma.category.findFirst({
+      where: { 
+        categoryName: { 
+          equals: categoryName.trim(), 
+          mode: 'insensitive' 
+        },
+        id: { not: parseInt(id) }
+      }
+    });
+
+    if (duplicateCategory) {
+      return res.status(400).json({
+        success: false,
+        message: `Category "${categoryName}" already exists. Please choose a different name.`
+      });
     }
 
     const updatedCategory = await prisma.category.update({
       where: { id: parseInt(id) },
       data: {
-        categoryName,
+        categoryName: categoryName.trim(),
       },
     });
 
     res.status(200).json({
+      success: true,
       message: "Category updated successfully",
-      category: updatedCategory,
+      data: updatedCategory,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error updating category:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to update category",
+      error: error.message 
+    });
   }
 };
 

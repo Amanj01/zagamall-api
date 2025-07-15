@@ -37,7 +37,7 @@ const getEntertainmentAndSports = async (req, res) => {
     // Get entertainment and sports with pagination
     const entertainmentAndSports = await prisma.entertainmentAndSport.findMany({
       where: whereClause,
-      include: { location: true, gallery: true },
+      include: { location: true, EntertainmentAndSportGallery: true },
       orderBy: orderBy,
       skip: skip,
       take: pageSize,
@@ -101,7 +101,7 @@ const getEntertainmentAndSportById = async (req, res) => {
 
     const entertainmentAndSport = await prisma.entertainmentAndSport.findUnique({
       where: { id: entertainmentAndSportId },
-      include: { location: true, gallery: true }
+      include: { location: true, EntertainmentAndSportGallery: true }
     });
 
     if (!entertainmentAndSport) {
@@ -138,6 +138,13 @@ const createEntertainmentAndSport = async (req, res) => {
       });
     }
 
+    if (!description || description.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Description is required and cannot be empty"
+      });
+    }
+
     if (!locationId) {
       return res.status(400).json({
         success: false,
@@ -152,7 +159,7 @@ const createEntertainmentAndSport = async (req, res) => {
       });
     }
 
-    if (description && description.length > 1000) {
+    if (description.length > 1000) {
       return res.status(400).json({
         success: false,
         message: "Description cannot exceed 1000 characters"
@@ -184,12 +191,12 @@ const createEntertainmentAndSport = async (req, res) => {
     const entertainmentAndSport = await prisma.entertainmentAndSport.create({
       data: {
         title: title.trim(),
-        description: description ? description.trim() : null,
+        description: description.trim(),
         locationId: parseInt(locationId),
         area: area ? parseInt(area) : null,
-        gallery: { create: galleryImages }
+        EntertainmentAndSportGallery: { create: galleryImages }
       },
-      include: { location: true, gallery: true }
+      include: { location: true, EntertainmentAndSportGallery: true }
     });
 
     res.status(201).json({
@@ -224,7 +231,7 @@ const updateEntertainmentAndSport = async (req, res) => {
     // Check if entertainment and sport exists
     const existingEntertainmentAndSport = await prisma.entertainmentAndSport.findUnique({
       where: { id: entertainmentAndSportId },
-      include: { gallery: true }
+      include: { EntertainmentAndSportGallery: true }
     });
 
     if (!existingEntertainmentAndSport) {
@@ -258,7 +265,7 @@ const updateEntertainmentAndSport = async (req, res) => {
 
     // Delete old gallery images from Cloudinary if new ones are uploaded
     if (galleryImages.length > 0) {
-      for (const img of existingEntertainmentAndSport.gallery) {
+      for (const img of existingEntertainmentAndSport.EntertainmentAndSportGallery) {
         if (img.imagePath) {
           await deleteCloudinaryImage(img.imagePath);
         }
@@ -276,9 +283,9 @@ const updateEntertainmentAndSport = async (req, res) => {
         description: description ? description.trim() : existingEntertainmentAndSport.description,
         locationId: locationId ? parseInt(locationId) : existingEntertainmentAndSport.locationId,
         area: area ? parseInt(area) : existingEntertainmentAndSport.area,
-        ...(galleryImages.length > 0 && { gallery: { create: galleryImages } })
+        ...(galleryImages.length > 0 && { EntertainmentAndSportGallery: { create: galleryImages } })
       },
-      include: { location: true, gallery: true }
+      include: { location: true, EntertainmentAndSportGallery: true }
     });
 
     res.status(200).json({
@@ -311,7 +318,7 @@ const deleteEntertainmentAndSport = async (req, res) => {
 
     const entertainmentAndSport = await prisma.entertainmentAndSport.findUnique({
       where: { id: entertainmentAndSportId },
-      include: { gallery: true }
+      include: { EntertainmentAndSportGallery: true }
     });
 
     if (!entertainmentAndSport) {
@@ -322,7 +329,7 @@ const deleteEntertainmentAndSport = async (req, res) => {
     }
 
     // Delete gallery images from Cloudinary
-    for (const img of entertainmentAndSport.gallery) {
+    for (const img of entertainmentAndSport.EntertainmentAndSportGallery) {
       if (img.imagePath) {
         await deleteCloudinaryImage(img.imagePath);
       }

@@ -6,13 +6,15 @@ const {
   getAllFAQCategories,
   getFAQCategoryById, 
   createFAQCategory, 
-  updateFAQCategory 
+  updateFAQCategory,
+  getNextOrderNumber
 } = require("../controllers/faqCategoryController");
 
 const router = express.Router();
 
-router.get("/", paginationMiddleware("FAQCategory"));
+router.get("/", getAllFAQCategories);
 router.get("/all", getAllFAQCategories);
+router.get("/next-order", getNextOrderNumber);
 router.get("/:id", getFAQCategoryById);
 router.post("/", protect, createFAQCategory);
 router.put("/:id", protect, updateFAQCategory);

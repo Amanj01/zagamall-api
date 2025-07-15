@@ -235,6 +235,9 @@ const createOffice = async (req, res) => {
           error: err.message
         });
       }
+    } else if (req.body.image && typeof req.body.image === 'string' && req.body.image.startsWith('http')) {
+      // Use the image URL from the body if present and valid
+      coverImageUrl = req.body.image;
     }
 
     const office = await prisma.office.create({
@@ -393,6 +396,9 @@ const updateOffice = async (req, res) => {
           error: err.message
         });
       }
+    } else if (req.body.image && typeof req.body.image === 'string' && req.body.image.startsWith('http')) {
+      // Use the image URL from the body if present and valid
+      newCoverImageUrl = req.body.image;
     } else if (existingImage !== undefined && !req.files?.image) {
       // If no new image uploaded but existing image info is provided
       if (existingImage === '') {

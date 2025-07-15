@@ -23,7 +23,7 @@ const getAllTeamMembers = async (req, res) => {
       skip: parseInt(skip),
       take: parseInt(limit),
       orderBy: { [sortBy]: sortOrder },
-      include: { position: true },
+      include: { positionRef: true },
     });
 
     const meta = {
@@ -54,7 +54,7 @@ const getTeamMemberById = async (req, res) => {
     }
     const teamMember = await prisma.teamMember.findUnique({
       where: { id: teamMemberId },
-      include: { position: true },
+      include: { positionRef: true },
     });
     if (!teamMember) {
       return res.status(404).json({ success: false, message: "Team member not found" });
@@ -88,7 +88,7 @@ const createTeamMember = async (req, res) => {
         bio,
         imagePath,
       },
-      include: { position: true },
+      include: { positionRef: true },
     });
     res.status(201).json({ success: true, message: "Team member created successfully", data: teamMember });
   } catch (error) {
@@ -130,7 +130,7 @@ const updateTeamMember = async (req, res) => {
         bio: bio || existingTeamMember.bio,
         imagePath: finalImagePath,
       },
-      include: { position: true },
+      include: { positionRef: true },
     });
     res.status(200).json({ success: true, message: "Team member updated successfully", data: updatedTeamMember });
   } catch (error) {

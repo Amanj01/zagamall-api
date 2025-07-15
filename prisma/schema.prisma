@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -40,4 +40,296 @@ model Role {
   updatedAt   DateTime      @updatedAt
   users       User[]        @relation("RoleToUser")
   permissions Permissions[] @relation("PermissionsToRole")
+}
+
+model Location {
+  id                     Int                     @id @default(autoincrement())
+  level                  Int
+  number                 Int
+  type                   LocationType
+  locationByDescription  String?
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  dinings                Dining[]
+  entertainmentAndSports EntertainmentAndSport[]
+  offices                Office[]
+  stores                 Store[]
+}
+
+model Category {
+  id           Int      @id @default(autoincrement())
+  categoryName String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Dining       Dining[]
+  stores       Store[]
+}
+
+model Store {
+  id             Int              @id @default(autoincrement())
+  name           String
+  categoryId     Int
+  locationId     Int
+  description    String
+  imagePath      String?
+  isShowInHome   Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PromotionStore PromotionStore[]
+  category       Category         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  location       Location         @relation(fields: [locationId], references: [id], onDelete: Cascade)
+}
+
+model DiningCategory {
+  id          Int                     @id @default(autoincrement())
+  name        String                  @unique
+  createdAt   DateTime                @default(now())
+  description String?
+  imagePath   String?
+  isActive    Boolean                 @default(true)
+  dinings     Dining[]
+  features    DiningCategoryFeature[]
+}
+
+model DiningCategoryFeature {
+  id         Int            @id @default(autoincrement())
+  text       String
+  categoryId Int
+  category   DiningCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
+
+model Dining {
+  id               Int             @id @default(autoincrement())
+  name             String
+  categoryId       Int
+  locationId       Int
+  description      String
+  hours            String?
+  rating           Float?
+  imagePath        String?
+  isShowInHome     Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  diningCategoryId Int?
+  Category         Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  diningCategory   DiningCategory? @relation(fields: [diningCategoryId], references: [id], onDelete: Cascade)
+  location         Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id           Int      @id @default(autoincrement())
+  title        String
+  content      String
+  coverImage   String
+  startDate    DateTime
+  endDate      DateTime
+  startTime    String
+  isShowInHome Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Promotion {
+  id             Int              @id @default(autoincrement())
+  title          String
+  period         String?
+  description    String
+  imagePath      String?
+  isShowInHome   Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PromotionStore PromotionStore[]
+}
+
+model FAQCategory {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  orderNumber Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FAQ {
+  id          Int      @id @default(autoincrement())
+  question    String
+  answer      String
+  category    String
+  orderNumber Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Brand {
+  id           Int      @id @default(autoincrement())
+  name         String
+  image        String
+  isShowInHome Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  Item         Item[]
+}
+
+model Office {
+  id           Int             @id @default(autoincrement())
+  title        String
+  image        String?
+  locationId   Int
+  description  String
+  area         Int
+  isShowInHome Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  location     Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  gallery      OfficeGallery[]
+}
+
+model OfficeGallery {
+  id        Int      @id @default(autoincrement())
+  imagePath String
+  officeId  Int
+  createdAt DateTime @default(now())
+  office    Office   @relation(fields: [officeId], references: [id], onDelete: Cascade)
+}
+
+model EntertainmentAndSport {
+  id                           Int                            @id @default(autoincrement())
+  title                        String
+  description                  String
+  area                         Int?
+  locationId                   Int
+  createdAt                    DateTime                       @default(now())
+  updatedAt                    DateTime                       @updatedAt
+  location                     Location                       @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  EntertainmentAndSportGallery EntertainmentAndSportGallery[]
+}
+
+model HeroSection {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  imagePath   String
+  orderNumber Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model About {
+  id              Int             @id @default(autoincrement())
+  title           String
+  description     String
+  image           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  factsAndFigures FactAndFigure[]
+  ourValues       OurValue[]
+}
+
+model OurValue {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  aboutId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  about       About    @relation(fields: [aboutId], references: [id], onDelete: Cascade)
+}
+
+model FactAndFigure {
+  id          Int      @id @default(autoincrement())
+  number      String
+  description String
+  aboutId     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  about       About    @relation(fields: [aboutId], references: [id], onDelete: Cascade)
+}
+
+model ContactInquiry {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model HomeSetting {
+  id               Int      @id @default(autoincrement())
+  quickInfoTitle   String?
+  quickInfoContent String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Position {
+  id          Int          @id @default(autoincrement())
+  name        String
+  createdAt   DateTime     @default(now())
+  teamMembers TeamMember[]
+}
+
+model TeamMember {
+  id          Int      @id @default(autoincrement())
+  name        String
+  bio         String
+  imagePath   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  positionId  Int
+  positionRef Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+}
+
+model Resource {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  filePath    String?
+  fileType    String?
+  createdAt   DateTime @default(now())
+}
+
+model Item {
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String
+  cardImage      String?
+  showOnHomepage Boolean  @default(false)
+  brandId        Int
+  createdAt      DateTime @default(now())
+  Brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+}
+
+model ContactMe {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model EntertainmentAndSportGallery {
+  id                      Int                   @id @default(autoincrement())
+  imagePath               String
+  entertainmentAndSportId Int
+  createdAt               DateTime              @default(now())
+  entertainmentAndSport   EntertainmentAndSport @relation(fields: [entertainmentAndSportId], references: [id], onDelete: Cascade)
+}
+
+model PromotionStore {
+  id          Int       @id @default(autoincrement())
+  promotionId Int
+  storeId     Int
+  Promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  Store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+
+enum LocationType {
+  STORE
+  OFFICE
+  ENTERTAINMENT
+  DINING
 }

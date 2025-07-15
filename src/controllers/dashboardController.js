@@ -44,11 +44,11 @@ const getDashboardStats = async (req, res) => {
       prisma.contactInquiry.findMany({ orderBy: { createdAt: 'desc' }, take: 5 })
     ]);
 
-    // Get about info, facts, values
+    // Get about info, facts and figures, our values
     const aboutInfo = await prisma.about.findFirst({
       include: {
-        ourValues: true,
-        factsAndFigures: true
+        factsAndFigures: true,
+        ourValues: true
       }
     });
 
