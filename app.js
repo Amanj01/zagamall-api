@@ -36,6 +36,7 @@ const heroSectionRoutes = require('./src/routes/heroSectionRoutes');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 const positionRoutes = require('./src/routes/positionRoutes');
 const aboutRoutes = require('./src/routes/aboutRoutes');
+const parkingRoutes = require('./src/routes/parkingRoutes');
 
 const extractClientIp = require("./src/middlewares/clientIpMiddleware");
 
@@ -114,6 +115,7 @@ app.use('/api/hero-section', heroSectionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/positions', positionRoutes);
 app.use('/api/about', aboutRoutes);
+app.use('/api/parkings', parkingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

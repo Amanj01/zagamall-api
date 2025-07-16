@@ -1,0 +1,51 @@
+### User Registration
+POST http://localhost:5000/users/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "testuser@example.com",
+  "password": "TestPassword123",
+  "role": "admin"
+}
+
+### User Login
+POST http://localhost:5000/users/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "TestPassword123"
+}
+
+### Get all parkings
+GET http://localhost:5000/api/parkings
+Accept: application/json
+
+### Get a parking by ID
+GET http://localhost:5000/api/parkings/1
+Accept: application/json
+
+### Create a new parking
+POST http://localhost:5000/api/parkings
+Content-Type: application/json
+Authorization: Bearer <YOUR_TOKEN>
+
+{
+  "title": "Sample Parking",
+  "description": "Sample parking description"
+}
+
+### Update a parking
+PUT http://localhost:5000/api/parkings/1
+Content-Type: application/json
+Authorization: Bearer <YOUR_TOKEN>
+
+{
+  "title": "Updated Parking",
+  "description": "Updated description"
+}
+
+### Delete a parking
+DELETE http://localhost:5000/api/parkings/1
+Authorization: Bearer <YOUR_TOKEN> 

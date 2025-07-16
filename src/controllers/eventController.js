@@ -126,7 +126,7 @@ const getEventById = async (req, res) => {
 // Create new event
 const createEvent = async (req, res) => {
   try {
-    const { title, content, startDate, endDate, startTime, isShowInHome, coverImage } = req.body;
+    const { title, content, coverImage, startDate, endDate, startTime, location, isShowInHome } = req.body;
 
     // Validation
     if (!title || title.trim().length === 0) {
@@ -222,6 +222,7 @@ const createEvent = async (req, res) => {
         startDate: startDateTime,
         endDate: endDateTime,
         startTime: String(startTime),
+        location: typeof location === 'string' ? location : '',
         isShowInHome: isShowInHome === "true" || isShowInHome === true,
         coverImage,
       },
@@ -253,7 +254,7 @@ const updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
     const eventId = parseInt(id);
-    const { title, content, startDate, endDate, startTime, isShowInHome, coverImage } = req.body;
+    const { title, content, coverImage, startDate, endDate, startTime, location, isShowInHome } = req.body;
 
     if (isNaN(eventId)) {
       return res.status(400).json({
@@ -364,6 +365,7 @@ const updateEvent = async (req, res) => {
         startDate: startDateTime,
         endDate: endDateTime,
         startTime: startTime || existingEvent.startTime,
+        location: typeof location === 'string' ? location : existingEvent.location || '',
         isShowInHome: isShowInHome !== undefined ? (isShowInHome === "true" || isShowInHome === true) : existingEvent.isShowInHome,
         coverImage: finalCoverImage,
       }

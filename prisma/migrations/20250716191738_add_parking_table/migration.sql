@@ -130,6 +130,7 @@ CREATE TABLE "Event" (
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "startTime" TEXT NOT NULL,
+    "location" TEXT,
     "isShowInHome" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -155,7 +156,10 @@ CREATE TABLE "Promotion" (
 CREATE TABLE "FAQCategory" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "description" TEXT,
+    "orderNumber" INTEGER NOT NULL DEFAULT 1,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "FAQCategory_pkey" PRIMARY KEY ("id")
 );
@@ -249,18 +253,6 @@ CREATE TABLE "About" (
 );
 
 -- CreateTable
-CREATE TABLE "FactAndFigure" (
-    "id" SERIAL NOT NULL,
-    "number" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "aboutId" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "FactAndFigure_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "OurValue" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
@@ -270,6 +262,18 @@ CREATE TABLE "OurValue" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "OurValue_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "FactAndFigure" (
+    "id" SERIAL NOT NULL,
+    "number" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "aboutId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "FactAndFigure_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -345,18 +349,6 @@ CREATE TABLE "Item" (
 );
 
 -- CreateTable
-CREATE TABLE "ContactMe" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "message" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "ContactMe_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "EntertainmentAndSportGallery" (
     "id" SERIAL NOT NULL,
     "imagePath" TEXT NOT NULL,
@@ -373,6 +365,17 @@ CREATE TABLE "PromotionStore" (
     "storeId" INTEGER NOT NULL,
 
     CONSTRAINT "PromotionStore_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Parking" (
+    "id" SERIAL NOT NULL,
+    "title" TEXT NOT NULL,
+    "image" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Parking_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -438,10 +441,10 @@ ALTER TABLE "OfficeGallery" ADD CONSTRAINT "OfficeGallery_officeId_fkey" FOREIGN
 ALTER TABLE "EntertainmentAndSport" ADD CONSTRAINT "EntertainmentAndSport_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "FactAndFigure" ADD CONSTRAINT "FactAndFigure_aboutId_fkey" FOREIGN KEY ("aboutId") REFERENCES "About"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "OurValue" ADD CONSTRAINT "OurValue_aboutId_fkey" FOREIGN KEY ("aboutId") REFERENCES "About"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "OurValue" ADD CONSTRAINT "OurValue_aboutId_fkey" FOREIGN KEY ("aboutId") REFERENCES "About"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "FactAndFigure" ADD CONSTRAINT "FactAndFigure_aboutId_fkey" FOREIGN KEY ("aboutId") REFERENCES "About"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_positionId_fkey" FOREIGN KEY ("positionId") REFERENCES "Position"("id") ON DELETE CASCADE ON UPDATE CASCADE;

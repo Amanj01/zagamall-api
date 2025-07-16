@@ -27,6 +27,10 @@ function buildMetaLinks(baseUrl, page, limit, total, search) {
   };
 }
 
+// --- Dining Category Controller ---
+// All endpoints now handle features as a related table (DiningCategoryFeature)
+// Features are always included in responses
+
 // List with pagination/search
 const getAllDiningCategories = async (req, res) => {
   try {
@@ -49,6 +53,7 @@ const getAllDiningCategories = async (req, res) => {
       orderBy: { createdAt: 'desc' },
       skip,
       take: pageSize,
+      include: { features: true }
     });
     // Patch: Ensure every category has a 'features' array
     const safeCategories = categories.map(cat => ({
@@ -87,6 +92,7 @@ const getDiningCategoryById = async (req, res) => {
     }
     const category = await prisma.diningCategory.findUnique({
       where: { id: categoryId },
+      include: { features: true }
     });
     if (!category) {
       return res.status(404).json({
@@ -157,7 +163,11 @@ const createDiningCategory = async (req, res) => {
         description: description || '',
         imagePath,
         isActive: isActive !== undefined ? (isActive === 'true' || isActive === true) : true,
+        features: {
+          create: featuresArr.map(text => ({ text }))
+        }
       },
+      include: { features: true }
     });
     res.status(201).json({
       success: true,
@@ -216,17 +226,7 @@ const updateDiningCategory = async (req, res) => {
         message: 'A dining category with this name already exists',
       });
     }
-    // Get existing category
-    const existingCategory = await prisma.diningCategory.findUnique({
-      where: { id: categoryId },
-    });
-    if (!existingCategory) {
-      return res.status(404).json({
-        success: false,
-        message: 'Dining category not found',
-      });
-    }
-    // Handle features (bullet points) - parse from form data
+    // Parse features from request
     let featuresArr = [];
     if (req.body.features) {
       if (Array.isArray(req.body.features)) {
@@ -244,9 +244,30 @@ const updateDiningCategory = async (req, res) => {
         }
       }
     }
-    // Delete removed features and update/add new ones
-    await prisma.diningCategoryFeature.deleteMany({ where: { categoryId } });
-    const updatedCategory = await prisma.diningCategory.update({
+    // Fetch existing features
+    const existing = await prisma.diningCategory.findUnique({
+      where: { id: categoryId },
+      include: { features: true }
+    });
+    const existingFeatures = existing.features || [];
+    // Find features to delete
+    const toDelete = existingFeatures.filter(f => !featuresArr.includes(f.text));
+    // Find features to add
+    const toAdd = featuresArr.filter(text => !existingFeatures.some(f => f.text === text));
+    // Delete removed features
+    await prisma.diningCategoryFeature.deleteMany({
+      where: {
+        categoryId,
+        text: { in: toDelete.map(f => f.text) }
+      }
+    });
+    // Add new features
+    await prisma.diningCategoryFeature.createMany({
+      data: toAdd.map(text => ({ text, categoryId })),
+      skipDuplicates: true
+    });
+    // Update category main fields
+    const updated = await prisma.diningCategory.update({
       where: { id: categoryId },
       data: {
         name: name.trim(),
@@ -254,11 +275,12 @@ const updateDiningCategory = async (req, res) => {
         imagePath,
         isActive: isActive !== undefined ? (isActive === 'true' || isActive === true) : true,
       },
+      include: { features: true }
     });
-    res.json({
+    res.status(200).json({
       success: true,
       message: 'Dining category updated successfully',
-      data: updatedCategory,
+      data: updated,
     });
   } catch (error) {
     if (error.code === 'P2002') {

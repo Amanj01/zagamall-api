@@ -124,6 +124,7 @@ model Event {
   startDate    DateTime
   endDate      DateTime
   startTime    String
+  location     String?
   isShowInHome Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -253,7 +254,7 @@ model ContactInquiry {
   subject   String
   message   String
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 }
 
 model HomeSetting {
@@ -302,15 +303,6 @@ model Item {
   Brand          Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
 }
 
-model ContactMe {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  message   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-}
-
 model EntertainmentAndSportGallery {
   id                      Int                   @id @default(autoincrement())
   imagePath               String
@@ -325,6 +317,15 @@ model PromotionStore {
   storeId     Int
   Promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
   Store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+}
+
+model Parking {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  image       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum LocationType {

@@ -89,6 +89,7 @@ const submitContactInquiry = async (req, res) => {
         phone,
         subject,
         message,
+        updatedAt: new Date()
       },
     });
 
