@@ -1,10 +1,14 @@
 const prisma = require("../prisma");
 const { deleteCloudinaryImage } = require("../utils/utility");
 
-function buildMetaLinks(baseUrl, page, limit, total, search) {
+function buildMetaLinks(baseUrl, page, limit, total, search, sortBy, sortOrder) {
   const totalPages = Math.ceil(total / limit);
   const hasNextPage = page < totalPages;
   const hasPreviousPage = page > 1;
+  
+  const searchParam = search ? `&search=${search}` : '';
+  const sortParams = sortBy && sortOrder ? `&sortBy=${sortBy}&sortOrder=${sortOrder}` : '';
+  
   return {
     meta: {
       currentPage: page,
@@ -17,11 +21,11 @@ function buildMetaLinks(baseUrl, page, limit, total, search) {
       previousPage: hasPreviousPage ? page - 1 : null
     },
     links: {
-      self: `${baseUrl}?page=${page}&limit=${limit}${search ? `&search=${search}` : ''}`,
-      first: `${baseUrl}?page=1&limit=${limit}${search ? `&search=${search}` : ''}`,
-      last: `${baseUrl}?page=${totalPages}&limit=${limit}${search ? `&search=${search}` : ''}`,
-      next: hasNextPage ? `${baseUrl}?page=${page + 1}&limit=${limit}${search ? `&search=${search}` : ''}` : null,
-      prev: hasPreviousPage ? `${baseUrl}?page=${page - 1}&limit=${limit}${search ? `&search=${search}` : ''}` : null
+      self: `${baseUrl}?page=${page}&limit=${limit}${searchParam}${sortParams}`,
+      first: `${baseUrl}?page=1&limit=${limit}${searchParam}${sortParams}`,
+      last: `${baseUrl}?page=${totalPages}&limit=${limit}${searchParam}${sortParams}`,
+      next: hasNextPage ? `${baseUrl}?page=${page + 1}&limit=${limit}${searchParam}${sortParams}` : null,
+      prev: hasPreviousPage ? `${baseUrl}?page=${page - 1}&limit=${limit}${searchParam}${sortParams}` : null
     }
   };
 }
@@ -29,7 +33,7 @@ function buildMetaLinks(baseUrl, page, limit, total, search) {
 // Get all promotions with pagination, search, and sorting
 const getAllPromotions = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = "", sortBy = "createdAt", sortOrder = "desc" } = req.query;
+    const { page = 1, limit = 10, search = "", sortBy = "date", sortOrder = "desc" } = req.query;
     const pageNumber = parseInt(page);
     const pageSize = parseInt(limit);
     const skip = (pageNumber - 1) * pageSize;
@@ -39,21 +43,24 @@ const getAllPromotions = async (req, res) => {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
-        { period: { contains: search, mode: "insensitive" } },
-        { stores: { contains: search, mode: "insensitive" } }
+        { participatingStores: { contains: search, mode: "insensitive" } }
       ];
     }
     
-    const totalCount = await prisma.promotion.count({ where });
-    const promotions = await prisma.promotion.findMany({
+    // Validate sortBy field to ensure it exists in CurrentPromotion table
+    const validSortFields = ["id", "title", "description", "participatingStores", "date"];
+    const validSortBy = validSortFields.includes(sortBy) ? sortBy : "date";
+    
+    const totalCount = await prisma.currentPromotion.count({ where });
+    const promotions = await prisma.currentPromotion.findMany({
       where,
       skip: parseInt(skip),
       take: parseInt(limit),
-      orderBy: { [sortBy]: sortOrder },
+      orderBy: { [validSortBy]: sortOrder },
     });
     
     const baseUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}`;
-    const { meta, links } = buildMetaLinks(baseUrl, pageNumber, pageSize, totalCount, search);
+    const { meta, links } = buildMetaLinks(baseUrl, pageNumber, pageSize, totalCount, search, validSortBy, sortOrder);
     
     res.status(200).json({
       success: true,
@@ -85,7 +92,7 @@ const getPromotionById = async (req, res) => {
       });
     }
 
-    const promotion = await prisma.promotion.findUnique({
+    const promotion = await prisma.currentPromotion.findUnique({
       where: { id: promotionId },
     });
 
@@ -114,21 +121,8 @@ const getPromotionById = async (req, res) => {
 // Create a new promotion
 const createPromotion = async (req, res) => {
   try {
-    console.log('Received promotion creation request:', {
-      body: req.body,
-      file: req.file ? 'File present' : 'No file'
-    });
-
-    const { title, period, stores, description, isShowInHome, imagePath } = req.body;
+    const { title, description, participatingStores, date, endDate } = req.body;
     
-    console.log('Parsed fields:', {
-      title,
-      period,
-      stores,
-      description,
-      isShowInHome
-    });
-
     // Validation
     if (!title || title.trim().length === 0) {
       return res.status(400).json({ 
@@ -136,22 +130,21 @@ const createPromotion = async (req, res) => {
         message: "Promotion title is required and cannot be empty" 
       });
     }
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        message: "Promotion date is required"
+      });
+    }
 
-    const promotion = await prisma.promotion.create({
+    const promotion = await prisma.currentPromotion.create({
       data: {
         title: title.trim(),
-        period,
-        stores,
         description: description ? description.trim() : '',
-        imagePath,
-        isShowInHome: isShowInHome === "true" || isShowInHome === true,
+        participatingStores,
+        date: new Date(date),
+        endDate: endDate ? new Date(endDate) : null,
       },
-    });
-    
-    console.log('Sending create response:', {
-      success: true,
-      message: "Promotion created successfully",
-      data: promotion,
     });
     
     res.status(201).json({
@@ -174,7 +167,7 @@ const updatePromotion = async (req, res) => {
   try {
     const { id } = req.params;
     const promotionId = parseInt(id);
-    const { title, period, stores, description, isShowInHome, imagePath, existingImage } = req.body;
+    const { title, description, participatingStores, date, endDate } = req.body;
     
     if (isNaN(promotionId)) {
       return res.status(400).json({ 
@@ -183,7 +176,7 @@ const updatePromotion = async (req, res) => {
       });
     }
     
-    const existingPromotion = await prisma.promotion.findUnique({
+    const existingPromotion = await prisma.currentPromotion.findUnique({
       where: { id: promotionId },
     });
     
@@ -201,71 +194,24 @@ const updatePromotion = async (req, res) => {
         message: "Promotion title cannot be empty" 
       });
     }
-    
-    // Handle image upload (Cloudinary)
-    let finalImagePath = existingPromotion.imagePath; // Default to existing image
-    
-    if (req.file) {
-      console.log('Image file received (update):', {
-        fieldname: req.file.fieldname,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        buffer: req.file.buffer ? 'Buffer present' : 'No buffer'
+    if (date !== undefined && !date) {
+      return res.status(400).json({
+        success: false,
+        message: "Promotion date is required"
       });
-      try {
-        // Convert buffer to base64 for Cloudinary
-        const buffer = req.file.buffer;
-        const base64String = buffer.toString('base64');
-        const dataURI = `data:${req.file.mimetype};base64,${base64String}`;
-        console.log('Uploading to Cloudinary with dataURI length (update):', dataURI.length);
-        const { uploadToCloudinary } = require("../utils/utility");
-        finalImagePath = await uploadToCloudinary(dataURI, 'promotions');
-        console.log('Cloudinary upload successful (update):', finalImagePath);
-        // Delete old Cloudinary image if different
-        if (existingPromotion.imagePath && existingPromotion.imagePath !== finalImagePath) {
-          await deleteCloudinaryImage(existingPromotion.imagePath);
-        }
-      } catch (err) {
-        console.error('Cloudinary upload failed (update):', err);
-        return res.status(500).json({ 
-          success: false, 
-          message: 'Failed to upload image to Cloudinary', 
-          error: err.message 
-        });
-      }
-    } else if (existingImage !== undefined) {
-      // Handle existingImage field from frontend
-      if (existingImage === '') {
-        // Remove image
-        if (existingPromotion.imagePath) {
-          await deleteCloudinaryImage(existingPromotion.imagePath);
-        }
-        finalImagePath = null;
-      } else if (existingImage) {
-        // Keep existing image
-        finalImagePath = existingImage;
-      }
     }
-    
+
     // Prepare update data
     const updateData = {};
     if (title !== undefined) updateData.title = title.trim();
-    if (period !== undefined) updateData.period = period;
-    if (stores !== undefined) updateData.stores = stores;
     if (description !== undefined) updateData.description = description ? description.trim() : '';
-    if (finalImagePath !== undefined) updateData.imagePath = finalImagePath;
-    if (isShowInHome !== undefined) updateData.isShowInHome = isShowInHome === "true" || isShowInHome === true;
+    if (participatingStores !== undefined) updateData.participatingStores = participatingStores;
+    if (date !== undefined) updateData.date = new Date(date);
+    if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
     
-    const updatedPromotion = await prisma.promotion.update({
+    const updatedPromotion = await prisma.currentPromotion.update({
       where: { id: promotionId },
       data: updateData,
-    });
-    
-    console.log('Sending update response:', {
-      success: true,
-      message: "Promotion updated successfully",
-      data: updatedPromotion,
     });
     
     res.status(200).json({
@@ -296,7 +242,7 @@ const deletePromotion = async (req, res) => {
       });
     }
     
-    const existingPromotion = await prisma.promotion.findUnique({ where: { id: promotionId } });
+    const existingPromotion = await prisma.currentPromotion.findUnique({ where: { id: promotionId } });
     if (!existingPromotion) {
       // If already deleted, return success (idempotent)
       return res.status(200).json({
@@ -306,24 +252,8 @@ const deletePromotion = async (req, res) => {
       });
     }
     
-    // Delete image from Cloudinary if exists
-    if (existingPromotion.imagePath) {
-      try {
-        await deleteCloudinaryImage(existingPromotion.imagePath);
-      } catch (err) {
-        console.error('Failed to delete Cloudinary image:', err);
-        // Continue with deletion even if Cloudinary deletion fails
-      }
-    }
-    
-    await prisma.promotion.delete({
+    await prisma.currentPromotion.delete({
       where: { id: promotionId },
-    });
-    
-    console.log('Sending delete response:', {
-      success: true,
-      message: "Promotion deleted successfully",
-      data: null
     });
     
     res.status(200).json({

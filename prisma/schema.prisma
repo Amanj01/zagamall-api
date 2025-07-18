@@ -328,6 +328,15 @@ model Parking {
   updatedAt   DateTime @updatedAt
 }
 
+model CurrentPromotion {
+  id                  Int      @id @default(autoincrement())
+  date                DateTime
+  endDate             DateTime?
+  title               String
+  description         String
+  participatingStores String
+}
+
 enum LocationType {
   STORE
   OFFICE
