@@ -4,7 +4,6 @@ const { deleteCloudinaryImage, uploadToCloudinary, deleteFile } = require("../ut
 // Get all stores with pagination, search, and meta
 const getAllStores = async (req, res) => {
   try {
-    console.log('Stores API called with query:', req.query);
     const {
       page = 1,
       limit = 10,
@@ -31,14 +30,11 @@ const getAllStores = async (req, res) => {
     orderBy[sortBy] = sortOrder;
 
     // Get total count for pagination
-    console.log('Counting stores with where clause:', whereClause);
     const totalCount = await prisma.store.count({
       where: whereClause
     });
-    console.log('Total count:', totalCount);
 
     // Get stores with pagination
-    console.log('Fetching stores with params:', { whereClause, orderBy, skip, take: pageSize });
     const stores = await prisma.store.findMany({
       where: whereClause,
       include: {
@@ -49,7 +45,6 @@ const getAllStores = async (req, res) => {
       skip: skip,
       take: pageSize,
     });
-    console.log('Stores found:', stores.length, 'Requested pageSize:', pageSize);
 
     // Calculate pagination meta
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -86,12 +81,7 @@ const getAllStores = async (req, res) => {
       links
     });
   } catch (error) {
-    console.error('Error in getAllStores:', error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch stores",
-      error: error.message
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -121,8 +111,6 @@ const getStoreById = async (req, res) => {
 // Create a new store
 const createStore = async (req, res) => {
   try {
-    console.log('=== Store Creation Debug ===');
-    console.log('req.body:', req.body);
     
     const { name, categoryId, locationId, description, isShowInHome, imagePath } = req.body;
     
@@ -142,15 +130,6 @@ const createStore = async (req, res) => {
       return res.status(400).json({ error: "Image is required" });
     }
     
-    console.log('Creating store with data:', {
-      name,
-      categoryId: parseInt(categoryId),
-      locationId: parseInt(locationId),
-      description,
-      imagePath,
-      isShowInHome: isShowInHome === true || isShowInHome === "true"
-    });
-    
     const store = await prisma.store.create({
       data: {
         name,
@@ -166,10 +145,8 @@ const createStore = async (req, res) => {
       },
     });
     
-    console.log('✅ Store created successfully:', store);
     res.status(201).json({ message: "Store created successfully", store });
   } catch (error) {
-    console.error('❌ Error creating store:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -179,9 +156,6 @@ const updateStore = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, categoryId, locationId, description, isShowInHome, imagePath } = req.body;
-    
-    console.log('=== Store Update Debug ===');
-    console.log('req.body:', req.body);
     
     const existingStore = await prisma.store.findUnique({
       where: { id: parseInt(id) },
@@ -198,7 +172,6 @@ const updateStore = async (req, res) => {
         // User wants to remove the image
         if (existingStore.imagePath) {
           await deleteCloudinaryImage(existingStore.imagePath);
-          console.log('🗑️ Existing Cloudinary image deleted');
         }
         finalImagePath = null;
       } else {
@@ -223,10 +196,8 @@ const updateStore = async (req, res) => {
       },
     });
     
-    console.log('✅ Store updated successfully:', updatedStore);
     res.status(200).json({ message: "Store updated successfully", store: updatedStore });
   } catch (error) {
-    console.error('❌ Error updating store:', error);
     res.status(500).json({ error: error.message });
   }
 };

@@ -3,12 +3,6 @@ const path = require("path");
 const { getDMMF } = require("@prisma/internals");
 const cloudinary = require('cloudinary').v2;
 
-// Debug: Check if environment variables are loaded
-console.log('🔍 Cloudinary Config Debug:');
-console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ Set' : '❌ Missing');
-console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? '✅ Set' : '❌ Missing');
-console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? '✅ Set' : '❌ Missing');
-
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -52,9 +46,7 @@ const deleteCloudinaryImage = async (imageUrl) => {
     // Example: https://res.cloudinary.com/your_cloud/image/upload/v1234567890/office_xxx.png
     const matches = imageUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z]+$/);
     let publicId = matches && matches[1] ? matches[1] : imageUrl.substring(imageUrl.lastIndexOf('/') + 1, imageUrl.lastIndexOf('.'));
-    console.log('Deleting Cloudinary image:', { imageUrl, publicId });
     const result = await cloudinary.uploader.destroy(publicId, { invalidate: true });
-    console.log('Cloudinary destroy result:', result);
   } catch (err) {
     console.error(`Failed to delete Cloudinary image: ${imageUrl} - ${err.message}`);
   }

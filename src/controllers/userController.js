@@ -86,8 +86,6 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("Login attempt:", req.body);
-
     // Find the user by email
     const user = await prisma.user.findUnique({
       where: { email },

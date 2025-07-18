@@ -10,33 +10,56 @@ const compression = require("compression");
 
 // Import routes
 
-const eventRoutes = require("./src/routes/eventRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const passwordResetRoutes = require("./src/routes/passwordResetRoutes");
 const roleRoutes = require("./src/routes/roleRoutes");
 const permissionsRoutes = require("./src/routes/PermissionRoutes");
 
 // Import new Zaga Mall routes
-const storeRoutes = require("./src/routes/storeRoutes");
-const diningRoutes = require("./src/routes/diningRoutes");
-const promotionRoutes = require("./src/routes/promotionRoutes");
-const teamMemberRoutes = require("./src/routes/teamMemberRoutes");
-const faqRoutes = require("./src/routes/faqRoutes");
-const faqCategoryRoutes = require("./src/routes/faqCategoryRoutes");
-const diningCategoryRoutes = require("./src/routes/diningCategoryRoutes");
-const contactInquiryRoutes = require("./src/routes/contactInquiryRoutes");
-const homeSettingRoutes = require("./src/routes/homeSettingRoutes");
-const brandRoutes = require("./src/routes/brandRoutes");
-const locationRoutes = require("./src/routes/locationRoutes");
-const categoryRoutes = require("./src/routes/categoryRoutes");
-const resourceRoutes = require('./src/routes/resourceRoutes');
-const officeRoutes = require('./src/routes/officeRoutes');
-const entertainmentAndSportRoutes = require('./src/routes/entertainmentAndSportRoutes');
-const heroSectionRoutes = require('./src/routes/heroSectionRoutes');
-const dashboardRoutes = require('./src/routes/dashboardRoutes');
-const positionRoutes = require('./src/routes/positionRoutes');
-const aboutRoutes = require('./src/routes/aboutRoutes');
-const parkingRoutes = require('./src/routes/parkingRoutes');
+const adminStoreRoutes = require("./src/routes/admin/store");
+const clientStoreRoutes = require("./src/routes/client/store");
+const adminDiningRoutes = require("./src/routes/admin/dining");
+const clientDiningRoutes = require("./src/routes/client/dining");
+const adminEventRoutes = require("./src/routes/admin/event");
+const clientEventRoutes = require("./src/routes/client/event");
+const adminFaqRoutes = require("./src/routes/admin/faq");
+const clientFaqRoutes = require("./src/routes/client/faq");
+const adminFaqCategoryRoutes = require("./src/routes/admin/faqCategory");
+const clientFaqCategoryRoutes = require("./src/routes/client/faqCategory");
+const adminPromotionRoutes = require("./src/routes/admin/promotion");
+const clientPromotionRoutes = require("./src/routes/client/promotion");
+const adminTeamMemberRoutes = require("./src/routes/admin/teamMember");
+const clientTeamMemberRoutes = require("./src/routes/client/teamMember");
+const adminDiningCategoryRoutes = require("./src/routes/admin/diningCategory");
+const clientDiningCategoryRoutes = require("./src/routes/client/diningCategory");
+const adminContactInquiryRoutes = require("./src/routes/admin/contactInquiry");
+const clientContactInquiryRoutes = require("./src/routes/client/contactInquiry");
+const adminBrandRoutes = require("./src/routes/admin/brand");
+const clientBrandRoutes = require("./src/routes/client/brand");
+const adminCategoryRoutes = require("./src/routes/admin/category");
+const clientCategoryRoutes = require("./src/routes/client/category");
+const adminLocationRoutes = require("./src/routes/admin/location");
+const clientLocationRoutes = require("./src/routes/client/location");
+const adminOfficeRoutes = require("./src/routes/admin/office");
+const clientOfficeRoutes = require("./src/routes/client/office");
+const adminEntertainmentAndSportRoutes = require("./src/routes/admin/entertainmentAndSport");
+const clientEntertainmentAndSportRoutes = require("./src/routes/client/entertainmentAndSport");
+const adminHomeSettingRoutes = require("./src/routes/admin/homeSetting");
+const clientHomeSettingRoutes = require("./src/routes/client/homeSetting");
+const adminPositionRoutes = require("./src/routes/admin/position");
+const clientPositionRoutes = require("./src/routes/client/position");
+const adminAboutRoutes = require("./src/routes/admin/about");
+const clientAboutRoutes = require("./src/routes/client/about");
+const adminParkingRoutes = require("./src/routes/admin/parking");
+const clientParkingRoutes = require("./src/routes/client/parking");
+const adminResourceRoutes = require("./src/routes/admin/resource");
+const clientResourceRoutes = require("./src/routes/client/resource");
+const adminItemRoutes = require("./src/routes/admin/item");
+const clientItemRoutes = require("./src/routes/client/item");
+const adminDashboardRoutes = require("./src/routes/admin/dashboard");
+const clientDashboardRoutes = require("./src/routes/client/dashboard");
+const adminHeroSectionRoutes = require("./src/routes/admin/heroSection");
+const clientHeroSectionRoutes = require("./src/routes/client/heroSection");
 
 const extractClientIp = require("./src/middlewares/clientIpMiddleware");
 
@@ -88,34 +111,82 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads/")));
 // Register routes
 
 app.use("/users/login", loginLimiter);
+app.use("/api/auth/login", loginLimiter); // Rate limiter for auth alias
 app.use("/users", userRoutes); // User routes
- app.use("/password", passwordResetRoutes); // Password reset routes
- app.use("/api/roles", roleRoutes); // Role routes
+app.use("/api/auth", userRoutes); // Auth routes alias for frontend compatibility
+app.use("/admin/api/users", userRoutes); // Admin user routes alias
+app.use("/password", passwordResetRoutes); // Password reset routes
+app.use("/api/roles", roleRoutes); // Role routes
 app.use("/permissions", permissionsRoutes); // Permissions routes
 
+// Add common API aliases (for frontend compatibility)
+app.use("/api/about", adminAboutRoutes); // About routes alias
+app.use("/api/dashboard", adminDashboardRoutes); // Dashboard routes alias
+app.use("/api/hero-sections", adminHeroSectionRoutes); // Hero sections routes alias
+app.use("/api/faq-categories", adminFaqCategoryRoutes); // FAQ categories routes alias
+app.use("/api/dining-categories", adminDiningCategoryRoutes); // Dining categories routes alias
+app.use("/api/entertainment-sports", adminEntertainmentAndSportRoutes); // Entertainment sports routes alias
+app.use("/api/positions", adminPositionRoutes); // Positions routes alias
+app.use("/api/parkings", adminParkingRoutes); // Parkings routes alias
+app.use("/api/offices", adminOfficeRoutes); // Offices routes alias
+app.use("/api/brands", adminBrandRoutes); // Brands routes alias
+app.use("/api/categories", adminCategoryRoutes); // Categories routes alias
+app.use("/api/locations", adminLocationRoutes); // Locations routes alias
+app.use("/api/stores", adminStoreRoutes); // Stores routes alias
+app.use("/api/dining", adminDiningRoutes); // Dining routes alias
+app.use("/api/events", adminEventRoutes); // Events routes alias
+app.use("/api/faq", adminFaqRoutes); // FAQ routes alias
+app.use("/api/promotions", adminPromotionRoutes); // Promotions routes alias
+app.use("/api/team-members", adminTeamMemberRoutes); // Team members routes alias
+app.use("/api/contact", adminContactInquiryRoutes); // Contact routes alias
+app.use("/api/items", adminItemRoutes); // Items routes alias
+
 // Register new Zaga Mall routes.
-app.use("/api/stores", storeRoutes);
-app.use("/api/dining", diningRoutes);
-app.use("/api/events", eventRoutes);
-app.use("/api/promotions", promotionRoutes);
-app.use("/api/team-members", teamMemberRoutes);
-app.use("/api/faq", faqRoutes); // Changed from /api/faqs to /api/faq
-app.use("/api/faq-categories", faqCategoryRoutes);
-app.use("/api/dining-categories", diningCategoryRoutes);
-app.use("/api/contact", contactInquiryRoutes);
-app.use("/api/home", homeSettingRoutes);
-app.use("/api/brands", brandRoutes);
-app.use("/api/auth", userRoutes); // Using existing userRoutes for auth
-app.use("/api/locations", locationRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use('/api/resource', resourceRoutes);
-app.use('/api/offices', officeRoutes);
-app.use('/api/entertainment-sports', entertainmentAndSportRoutes);
-app.use('/api/hero-section', heroSectionRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/positions', positionRoutes);
-app.use('/api/about', aboutRoutes);
-app.use('/api/parkings', parkingRoutes);
+app.use("/client/api/stores", clientStoreRoutes);
+app.use("/admin/api/stores", adminStoreRoutes);
+app.use("/client/api/dining", clientDiningRoutes);
+app.use("/admin/api/dining", adminDiningRoutes);
+app.use("/client/api/events", clientEventRoutes);
+app.use("/admin/api/events", adminEventRoutes);
+app.use("/client/api/faq", clientFaqRoutes);
+app.use("/admin/api/faq", adminFaqRoutes);
+app.use("/client/api/faq-categories", clientFaqCategoryRoutes);
+app.use("/admin/api/faq-categories", adminFaqCategoryRoutes);
+app.use("/client/api/promotions", clientPromotionRoutes);
+app.use("/admin/api/promotions", adminPromotionRoutes);
+app.use("/client/api/team-members", clientTeamMemberRoutes);
+app.use("/admin/api/team-members", adminTeamMemberRoutes);
+app.use("/client/api/dining-categories", clientDiningCategoryRoutes);
+app.use("/admin/api/dining-categories", adminDiningCategoryRoutes);
+app.use("/client/api/contact", clientContactInquiryRoutes);
+app.use("/admin/api/contact", adminContactInquiryRoutes);
+app.use("/client/api/brands", clientBrandRoutes);
+app.use("/admin/api/brands", adminBrandRoutes);
+app.use("/client/api/categories", clientCategoryRoutes);
+app.use("/admin/api/categories", adminCategoryRoutes);
+app.use("/client/api/locations", clientLocationRoutes);
+app.use("/admin/api/locations", adminLocationRoutes);
+app.use("/client/api/offices", clientOfficeRoutes);
+app.use("/admin/api/offices", adminOfficeRoutes);
+app.use("/client/api/entertainment-sports", clientEntertainmentAndSportRoutes);
+app.use("/admin/api/entertainment-sports", adminEntertainmentAndSportRoutes);
+app.use("/client/api/home", clientHomeSettingRoutes);
+app.use("/admin/api/home", adminHomeSettingRoutes);
+app.use("/client/api/positions", clientPositionRoutes);
+app.use("/admin/api/positions", adminPositionRoutes);
+app.use("/client/api/about", clientAboutRoutes);
+app.use("/admin/api/about", adminAboutRoutes);
+app.use("/client/api/parkings", clientParkingRoutes);
+app.use("/admin/api/parkings", adminParkingRoutes);
+app.use("/client/api/resource", clientResourceRoutes);
+app.use("/admin/api/resource", adminResourceRoutes);
+app.use("/client/api/items", clientItemRoutes);
+app.use("/admin/api/items", adminItemRoutes);
+app.use("/client/api/dashboard", clientDashboardRoutes);
+app.use("/admin/api/dashboard", adminDashboardRoutes);
+app.use("/client/api/hero-sections", clientHeroSectionRoutes);
+app.use("/admin/api/hero-sections", adminHeroSectionRoutes);
+app.use("/admin/api/hero-section", adminHeroSectionRoutes); // If both singular and plural are needed, keep both
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -230,6 +230,9 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
+const getDashboardData = getDashboardStats;
+
 module.exports = {
-  getDashboardStats
+  getDashboardStats,
+  getDashboardData
 }; 

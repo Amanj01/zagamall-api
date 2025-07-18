@@ -15,18 +15,8 @@ const isEmailConfigured =
 // Create transporter only if credentials are configured
 const createTransporter = () => {
   if (!isEmailConfigured) {
-    console.log("Email not configured - using mock transport");
     return {
       sendMail: async (options) => {
-        console.log("MOCK EMAIL SENT:", {
-          to: options.bcc || options.to,
-          subject: options.subject,
-          // Log first 100 chars of email content for debugging
-          contentPreview:
-            options.html && options.html.length > 100
-              ? options.html.substring(0, 100) + "..."
-              : options.html || "[No content]",
-        });
         return { messageId: "mock-email-id" };
       },
     };
