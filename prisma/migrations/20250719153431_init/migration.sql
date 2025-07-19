@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "LocationType" AS ENUM ('STORE', 'OFFICE', 'ENTERTAINMENT', 'DINING');
 
+-- CreateEnum
+CREATE TYPE "EntertainmentAndSportCategory" AS ENUM ('SPORT', 'ENTERTAINMENT');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -196,7 +199,7 @@ CREATE TABLE "Office" (
     "image" TEXT,
     "locationId" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
-    "area" INTEGER NOT NULL,
+    "area" INTEGER,
     "isShowInHome" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -215,12 +218,23 @@ CREATE TABLE "OfficeGallery" (
 );
 
 -- CreateTable
+CREATE TABLE "OfficeFeature" (
+    "id" SERIAL NOT NULL,
+    "text" TEXT NOT NULL,
+    "officeId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "OfficeFeature_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "EntertainmentAndSport" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "area" INTEGER,
     "locationId" INTEGER NOT NULL,
+    "category" TEXT NOT NULL DEFAULT 'ENTERTAINMENT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -371,11 +385,24 @@ CREATE TABLE "PromotionStore" (
 CREATE TABLE "Parking" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
+    "description" TEXT,
     "image" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Parking_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CurrentPromotion" (
+    "id" SERIAL NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3),
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "participatingStores" TEXT NOT NULL,
+
+    CONSTRAINT "CurrentPromotion_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -436,6 +463,9 @@ ALTER TABLE "Office" ADD CONSTRAINT "Office_locationId_fkey" FOREIGN KEY ("locat
 
 -- AddForeignKey
 ALTER TABLE "OfficeGallery" ADD CONSTRAINT "OfficeGallery_officeId_fkey" FOREIGN KEY ("officeId") REFERENCES "Office"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "OfficeFeature" ADD CONSTRAINT "OfficeFeature_officeId_fkey" FOREIGN KEY ("officeId") REFERENCES "Office"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "EntertainmentAndSport" ADD CONSTRAINT "EntertainmentAndSport_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "Location"("id") ON DELETE CASCADE ON UPDATE CASCADE;

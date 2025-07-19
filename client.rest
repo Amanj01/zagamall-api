@@ -3,9 +3,9 @@ POST http://localhost:5000/users/register
 Content-Type: application/json
 
 {
-  "username": "testuser",
-  "email": "testuser@example.com",
-  "password": "TestPassword123",
+  "username": "admin",
+  "email": "admin@zagamall.com",
+  "password": "admin123",
   "role": "admin"
 }
 
@@ -14,8 +14,8 @@ POST http://localhost:5000/users/login
 Content-Type: application/json
 
 {
-  "email": "testuser@example.com",
-  "password": "TestPassword123"
+  "email": "admin@zagamall.com",
+  "password": "admin123"
 }
 
 ### Get all parkings
@@ -29,7 +29,7 @@ Accept: application/json
 ### Create a new parking
 POST http://localhost:5000/api/parkings
 Content-Type: application/json
-Authorization: Bearer <YOUR_TOKEN>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
 
 {
   "title": "Sample Parking",
@@ -39,7 +39,7 @@ Authorization: Bearer <YOUR_TOKEN>
 ### Update a parking
 PUT http://localhost:5000/api/parkings/1
 Content-Type: application/json
-Authorization: Bearer <YOUR_TOKEN>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
 
 {
   "title": "Updated Parking",
@@ -48,4 +48,162 @@ Authorization: Bearer <YOUR_TOKEN>
 
 ### Delete a parking
 DELETE http://localhost:5000/api/parkings/1
-Authorization: Bearer <YOUR_TOKEN> 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI 
+
+### ADMIN ABOUT
+GET http://localhost:5000/api/admin/about
+Accept: application/json
+
+GET http://localhost:5000/api/admin/about/1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+POST http://localhost:5000/api/admin/about
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+{
+  "title": "Sample About",
+  "description": "Sample description"
+}
+
+PUT http://localhost:5000/api/admin/about/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+{
+  "title": "Updated About",
+  "description": "Updated description"
+}
+
+DELETE http://localhost:5000/api/admin/about/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+### CLIENT ABOUT
+GET http://localhost:5000/api/client/about
+Accept: application/json
+
+GET http://localhost:5000/api/client/about/1
+Accept: application/json
+
+### ADMIN BRAND
+GET http://localhost:5000/api/admin/brand
+Accept: application/json
+
+GET http://localhost:5000/api/admin/brand/1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+POST http://localhost:5000/api/admin/brand
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+{
+  "name": "Sample Brand"
+}
+
+PUT http://localhost:5000/api/admin/brand/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+{
+  "name": "Updated Brand"
+}
+
+DELETE http://localhost:5000/api/admin/brand/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+### CLIENT BRAND
+GET http://localhost:5000/api/client/brand
+Accept: application/json
+
+GET http://localhost:5000/api/client/brand/1
+Accept: application/json
+
+### ADMIN CATEGORY
+GET http://localhost:5000/api/admin/category
+Accept: application/json
+
+GET http://localhost:5000/api/admin/category/1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+POST http://localhost:5000/api/admin/category
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+{
+  "name": "Sample Category"
+}
+
+PUT http://localhost:5000/api/admin/category/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+{
+  "name": "Updated Category"
+}
+
+DELETE http://localhost:5000/api/admin/category/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+### CLIENT CATEGORY
+GET http://localhost:5000/api/client/category
+Accept: application/json
+
+GET http://localhost:5000/api/client/category/1
+Accept: application/json
+
+### ADMIN CONTACT INQUIRY
+GET http://localhost:5000/api/admin/contactInquiry
+Accept: application/json
+
+GET http://localhost:5000/api/admin/contactInquiry/all
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+GET http://localhost:5000/api/admin/contactInquiry/1
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+PUT http://localhost:5000/api/admin/contactInquiry/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+{
+  "status": "resolved"
+}
+
+DELETE http://localhost:5000/api/admin/contactInquiry/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+### CLIENT CONTACT INQUIRY
+POST http://localhost:5000/api/client/contactInquiry/submit
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "message": "Hello!"
+}
+
+### ADMIN DASHBOARD
+GET http://localhost:5000/api/admin/dashboard
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+GET http://localhost:5000/api/admin/dashboard/stats
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+GET http://localhost:5000/api/admin/dashboard/data
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkB6YWdhbWFsbC5jb20iLCJpYXQiOjE3NTI5MzE4NjMsImV4cCI6MTc1NTUyMzg2M30.2jOwkxmx1vBOySfKxNUPfJNzODbt7hzE-V_8lRLGrFI
+
+### CLIENT DASHBOARD
+GET http://localhost:5000/api/client/dashboard
+Accept: application/json 
+
+### CLIENT HOMEPAGE FEATURED DATA
+GET http://localhost:5000/client/api/home/homepage
+Accept: application/json 
