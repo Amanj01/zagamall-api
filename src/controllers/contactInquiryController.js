@@ -88,8 +88,7 @@ const submitContactInquiry = async (req, res) => {
         email,
         phone,
         subject,
-        message,
-        updatedAt: new Date()
+        message
       },
     });
 

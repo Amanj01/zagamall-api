@@ -199,6 +199,7 @@ model EntertainmentAndSport {
   description                  String
   area                         Int?
   locationId                   Int
+  category                     String                         @default("ENTERTAINMENT")
   createdAt                    DateTime                       @default(now())
   updatedAt                    DateTime                       @updatedAt
   location                     Location                       @relation(fields: [locationId], references: [id], onDelete: Cascade)
@@ -342,4 +343,9 @@ enum LocationType {
   OFFICE
   ENTERTAINMENT
   DINING
+}
+
+enum EntertainmentAndSportCategory {
+  SPORT
+  ENTERTAINMENT
 }

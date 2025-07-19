@@ -128,7 +128,7 @@ const getEntertainmentAndSportById = async (req, res) => {
 // Create new entertainment and sport
 const createEntertainmentAndSport = async (req, res) => {
   try {
-    const { title, description, locationId, area } = req.body;
+    const { title, description, locationId, area, category } = req.body;
 
     // Validation
     if (!title || title.trim().length === 0) {
@@ -194,6 +194,7 @@ const createEntertainmentAndSport = async (req, res) => {
         description: description.trim(),
         locationId: parseInt(locationId),
         area: area ? parseInt(area) : null,
+        category: category || 'ENTERTAINMENT',
         EntertainmentAndSportGallery: { create: galleryImages }
       },
       include: { location: true, EntertainmentAndSportGallery: true }
@@ -219,7 +220,7 @@ const updateEntertainmentAndSport = async (req, res) => {
   try {
     const { id } = req.params;
     const entertainmentAndSportId = parseInt(id);
-    const { title, description, locationId, area } = req.body;
+    const { title, description, locationId, area, category } = req.body;
 
     if (isNaN(entertainmentAndSportId)) {
       return res.status(400).json({
@@ -283,6 +284,7 @@ const updateEntertainmentAndSport = async (req, res) => {
         description: description ? description.trim() : existingEntertainmentAndSport.description,
         locationId: locationId ? parseInt(locationId) : existingEntertainmentAndSport.locationId,
         area: area ? parseInt(area) : existingEntertainmentAndSport.area,
+        category: category || existingEntertainmentAndSport.category,
         ...(galleryImages.length > 0 && { EntertainmentAndSportGallery: { create: galleryImages } })
       },
       include: { location: true, EntertainmentAndSportGallery: true }
