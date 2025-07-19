@@ -42,7 +42,8 @@ const getOffices = async (req, res) => {
       take: pageSize,
       include: {
         location: true,
-        gallery: true
+        gallery: true,
+        features: true
       }
     });
 
@@ -106,7 +107,8 @@ const getOfficeById = async (req, res) => {
       where: { id: officeId },
       include: {
         location: true,
-        gallery: true
+        gallery: true,
+        features: true
       }
     });
 
@@ -134,7 +136,7 @@ const getOfficeById = async (req, res) => {
 // Create new office
 const createOffice = async (req, res) => {
   try {
-    const { title, description, locationId, area, image, gallery } = req.body;
+    const { title, description, locationId, area, image, gallery, features } = req.body;
 
     // Validation
     if (!title || title.trim().length === 0) {
@@ -158,7 +160,7 @@ const createOffice = async (req, res) => {
       });
     }
 
-    if (!area || isNaN(parseInt(area)) || parseInt(area) <= 0) {
+    if (area && (isNaN(parseInt(area)) || parseInt(area) <= 0)) {
       return res.status(400).json({
         success: false,
         message: "Area must be a positive number"
@@ -240,20 +242,30 @@ const createOffice = async (req, res) => {
       coverImageUrl = req.body.image;
     }
 
+    // Prepare features data
+    let featuresData = [];
+    if (features && Array.isArray(features)) {
+      featuresData = features.map(feature => ({ text: feature.trim() }));
+    }
+
     const office = await prisma.office.create({
       data: {
         title: title.trim(),
         description: description.trim(),
         locationId: parseInt(locationId),
-        area: parseInt(area),
+        area: area ? parseInt(area) : null,
         image: coverImageUrl,
         gallery: {
           create: galleryData
+        },
+        features: {
+          create: featuresData
         }
       },
       include: {
         location: true,
-        gallery: true
+        gallery: true,
+        features: true
       }
     });
 
@@ -283,7 +295,7 @@ const updateOffice = async (req, res) => {
   try {
     const { id } = req.params;
     const officeId = parseInt(id);
-    const { title, description, locationId, area, image, gallery, existingImage } = req.body;
+    const { title, description, locationId, area, image, gallery, existingImage, features } = req.body;
     
 
 
@@ -332,7 +344,7 @@ const updateOffice = async (req, res) => {
       });
     }
 
-    if (!area || isNaN(parseInt(area)) || parseInt(area) <= 0) {
+    if (area && (isNaN(parseInt(area)) || parseInt(area) <= 0)) {
       return res.status(400).json({
         success: false,
         message: "Area must be a positive number"
@@ -452,18 +464,37 @@ const updateOffice = async (req, res) => {
       }
     }
 
+    // Handle features update
+    if (features && Array.isArray(features)) {
+      // Delete existing features
+      await prisma.officeFeature.deleteMany({
+        where: { officeId: officeId }
+      });
+      
+      // Create new features
+      const featuresData = features.map(feature => ({ 
+        text: feature.trim(), 
+        officeId: officeId 
+      }));
+      
+      if (featuresData.length > 0) {
+        await prisma.officeFeature.createMany({ data: featuresData });
+      }
+    }
+
     const updatedOffice = await prisma.office.update({
       where: { id: officeId },
       data: {
         title: title.trim(),
         description: description.trim(),
         locationId: parseInt(locationId),
-        area: parseInt(area),
+        area: area ? parseInt(area) : null,
         image: newCoverImageUrl !== null ? newCoverImageUrl : (existingImage !== undefined && existingImage !== '' ? existingImage : null)
       },
       include: {
         location: true,
-        gallery: true
+        gallery: true,
+        features: true
       }
     });
 

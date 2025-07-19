@@ -117,23 +117,7 @@ const getDiningById = async (req, res) => {
 // Create
 const createDining = async (req, res) => {
   try {
-    console.log('Received dining creation request:', {
-      body: req.body,
-      file: req.file ? 'File present' : 'No file'
-    });
-
     let { name, diningCategoryId, locationId, description, openingTime, closingTime, rating, isShowInHome, imagePath } = req.body;
-    
-    console.log('Parsed fields:', {
-      name,
-      diningCategoryId,
-      locationId,
-      description,
-      openingTime,
-      closingTime,
-      rating,
-      isShowInHome
-    });
 
     // Validation
     if (!name || name.trim().length === 0) {
@@ -228,31 +212,19 @@ const createDining = async (req, res) => {
     // Handle image upload (Cloudinary)
     let finalImagePath = imagePath || null;
     if (req.file) {
-      console.log('Image file received:', {
-        fieldname: req.file.fieldname,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        buffer: req.file.buffer ? 'Buffer present' : 'No buffer'
-      });
       try {
         // Convert buffer to base64 for Cloudinary
         const buffer = req.file.buffer;
         const base64String = buffer.toString('base64');
         const dataURI = `data:${req.file.mimetype};base64,${base64String}`;
-        console.log('Uploading to Cloudinary with dataURI length:', dataURI.length);
         finalImagePath = await uploadToCloudinary(dataURI, 'dining');
-        console.log('Cloudinary upload successful:', finalImagePath);
       } catch (err) {
-        console.error('Cloudinary upload failed:', err);
         return res.status(500).json({ 
           success: false, 
           message: 'Failed to upload image to Cloudinary', 
           error: err.message 
         });
       }
-    } else {
-      console.log('No image file received in request');
     }
     const dining = await prisma.dining.create({
       data: {
@@ -378,27 +350,17 @@ const updateDining = async (req, res) => {
     let finalImagePath = existingDining.imagePath; // Default to existing image
     
     if (req.file) {
-      console.log('Image file received (update):', {
-        fieldname: req.file.fieldname,
-        originalname: req.file.originalname,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        buffer: req.file.buffer ? 'Buffer present' : 'No buffer'
-      });
       try {
         // Convert buffer to base64 for Cloudinary
         const buffer = req.file.buffer;
         const base64String = buffer.toString('base64');
         const dataURI = `data:${req.file.mimetype};base64,${base64String}`;
-        console.log('Uploading to Cloudinary with dataURI length (update):', dataURI.length);
         finalImagePath = await uploadToCloudinary(dataURI, 'dining');
-        console.log('Cloudinary upload successful (update):', finalImagePath);
         // Delete old Cloudinary image if different
         if (existingDining.imagePath && existingDining.imagePath !== finalImagePath) {
           await deleteCloudinaryImage(existingDining.imagePath);
         }
       } catch (err) {
-        console.error('Cloudinary upload failed (update):', err);
         return res.status(500).json({ 
           success: false, 
           message: 'Failed to upload image to Cloudinary', 
@@ -440,11 +402,6 @@ const updateDining = async (req, res) => {
       include: { diningCategory: true, location: true },
     });
     
-    console.log('Sending update response:', {
-      success: true,
-      message: "Dining option updated successfully",
-      data: updatedDining,
-    });
     res.status(200).json({
       success: true,
       message: "Dining option updated successfully",

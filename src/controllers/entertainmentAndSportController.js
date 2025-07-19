@@ -173,10 +173,7 @@ const createEntertainmentAndSport = async (req, res) => {
         const files = Array.isArray(req.files.gallery) ? req.files.gallery : [req.files.gallery];
         
         for (const file of files) {
-          console.log('📤 Uploading gallery image to Cloudinary...');
           const imageUrl = await uploadToCloudinary(file.buffer, 'entertainment-sports');
-          console.log('✅ Gallery image uploaded to Cloudinary:', imageUrl);
-          
           galleryImages.push({ imagePath: imageUrl });
         }
       } catch (uploadError) {
@@ -249,10 +246,7 @@ const updateEntertainmentAndSport = async (req, res) => {
         const files = Array.isArray(req.files.gallery) ? req.files.gallery : [req.files.gallery];
         
         for (const file of files) {
-          console.log('📤 Uploading new gallery image to Cloudinary...');
           const imageUrl = await uploadToCloudinary(file.buffer, 'entertainment-sports');
-          console.log('✅ New gallery image uploaded to Cloudinary:', imageUrl);
-          
           galleryImages.push({ imagePath: imageUrl });
         }
       } catch (uploadError) {

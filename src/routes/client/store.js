@@ -13,8 +13,7 @@ router.get('/', async (req, res) => {
     if (searchTerm) where.name = { contains: searchTerm, mode: 'insensitive' };
     if (isShowInHome !== undefined) where.isShowInHome = isShowInHome === 'true' || isShowInHome === true;
     
-    console.log('Store API - Query params:', { name, search, isShowInHome, page, limit });
-    console.log('Store API - Where clause:', where);
+
     
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const take = parseInt(limit);
@@ -30,8 +29,7 @@ router.get('/', async (req, res) => {
     });
     const total = await prisma.store.count({ where });
     
-    console.log('Store API - Found stores:', stores.length);
-    console.log('Store API - Total stores:', total);
+
     
     // Only send public fields
     const publicStores = stores.map(({ id, name, description, category, location, isShowInHome, imagePath }) => ({
@@ -47,7 +45,7 @@ router.get('/', async (req, res) => {
       }
     };
     
-    console.log('Store API - Response data:', JSON.stringify(responseData, null, 2));
+
     
     res.json(responseData);
   } catch (error) {

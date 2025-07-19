@@ -4,10 +4,7 @@ const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting comprehensive seeder...');
-
   // ==================== AUTH SEEDER ====================
-  console.log('🔐 Creating auth data...');
 
   // Create admin role if it doesn't exist
   let adminRole = await prisma.role.findFirst({ where: { name: 'admin' } });
@@ -17,9 +14,8 @@ async function main() {
         name: 'admin',
       },
     });
-    console.log('✅ Created admin role');
   } else {
-    console.log('ℹ️ Admin role already exists');
+    // Admin role already exists
   }
 
   // Create admin user if it doesn't exist
@@ -38,14 +34,11 @@ async function main() {
         role: { connect: { id: adminRole.id } },
       },
     });
-    console.log('✅ Created admin user:', adminEmail);
-    console.log('🔑 Password:', adminPassword);
   } else {
-    console.log('ℹ️ Admin user already exists:', adminEmail);
+    // Admin user already exists
   }
 
   // ==================== LOCATIONS SEEDER ====================
-  console.log('📍 Creating locations...');
   
   const locations = [
     { level: 1, number: 101, type: 'STORE', locationByDescription: 'Ground Floor - Main Entrance' },
@@ -66,12 +59,10 @@ async function main() {
     
     if (!existingLocation) {
       await prisma.location.create({ data: locationData });
-      console.log(`✅ Created location: Level ${locationData.level}, Number ${locationData.number}`);
     }
   }
 
   // ==================== CATEGORIES SEEDER ====================
-  console.log('🏷️ Creating categories...');
   
   const categories = [
     'Fashion & Apparel',
@@ -93,12 +84,10 @@ async function main() {
     
     if (!existingCategory) {
       await prisma.category.create({ data: { categoryName } });
-      console.log(`✅ Created category: ${categoryName}`);
     }
   }
 
   // ==================== DINING CATEGORIES SEEDER ====================
-  console.log('🍽️ Creating dining categories...');
   
   const diningCategories = [
     { 
@@ -178,13 +167,10 @@ async function main() {
           }
         });
       }
-      
-      console.log(`✅ Created dining category: ${categoryData.name} with ${features.length} features`);
     }
   }
 
   // ==================== STORES SEEDER ====================
-  console.log('🏪 Creating stores...');
   
   const stores = [
     {
@@ -250,13 +236,11 @@ async function main() {
             isShowInHome: storeData.isShowInHome
           }
         });
-        console.log(`✅ Created store: ${storeData.name}`);
       }
     }
   }
 
   // ==================== DINING SEEDER ====================
-  console.log('🍕 Creating dining establishments...');
   
   const dinings = [
     {
@@ -365,13 +349,11 @@ async function main() {
             diningCategoryId: diningCategory?.id
           }
         });
-        console.log(`✅ Created dining: ${diningData.name}`);
       }
     }
   }
 
   // ==================== ENTERTAINMENT & SPORT SEEDER ====================
-  console.log('🎮 Creating entertainment and sport facilities...');
   
   const entertainmentAndSports = [
     {
@@ -382,14 +364,12 @@ async function main() {
       locationNumber: 301,
       category: 'SPORT',
       galleryImages: [
-        'https://images.unsplash.com/photo-1517960413843-0aee8e2d471c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1554284126-aa88f22d8b74?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1464983953574-0892a716854b?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1517960413843-0aee8e2d471c?w=800&h=600&fit=crop'
+        'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&h=600&fit=crop'
       ]
     },
     {
@@ -405,9 +385,7 @@ async function main() {
         'https://images.unsplash.com/photo-1517602302552-471fe67acf66?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1464983953574-0892a716854b?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1465101178521-c1a9136a3c91?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1517602302552-471fe67acf66?w=800&h=600&fit=crop'
+        'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?w=800&h=600&fit=crop'
       ]
     }
   ];
@@ -439,13 +417,10 @@ async function main() {
           }
         });
       }
-      
-      console.log(`✅ Created entertainment: ${entertainmentData.title} with ${galleryImages.length} gallery images`);
     }
   }
 
   // ==================== EVENTS SEEDER ====================
-  console.log('🎉 Creating events...');
   
   const events = [
     {
@@ -498,12 +473,10 @@ async function main() {
     
     if (!existingEvent) {
       await prisma.event.create({ data: eventData });
-      console.log(`✅ Created event: ${eventData.title}`);
     }
   }
 
   // ==================== CURRENT PROMOTIONS SEEDER ====================
-  console.log('🎯 Creating current promotions...');
   
   const currentPromotions = [
     {
@@ -536,12 +509,10 @@ async function main() {
     
     if (!existingPromotion) {
       await prisma.currentPromotion.create({ data: promotionData });
-      console.log(`✅ Created current promotion: ${promotionData.title}`);
     }
   }
 
   // ==================== BRANDS SEEDER ====================
-  console.log('🏷️ Creating brands...');
   
   const brands = [
     {
@@ -573,12 +544,10 @@ async function main() {
     
     if (!existingBrand) {
       await prisma.brand.create({ data: brandData });
-      console.log(`✅ Created brand: ${brandData.name}`);
     }
   }
 
   // ==================== OFFICES SEEDER ====================
-  console.log('🏢 Creating offices...');
   
   const offices = [
     {
@@ -589,10 +558,23 @@ async function main() {
       area: 150,
       imagePath: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
       isShowInHome: true,
+      features: [
+        'Modern office space with premium amenities',
+        'High-speed internet and WiFi connectivity',
+        '24/7 building access and security',
+        'Central air conditioning and heating',
+        'Professional reception and mail services',
+        'Meeting rooms and conference facilities',
+        'Parking spaces for tenants',
+        'Prime location in Zaga Mall'
+      ],
       galleryImages: [
         'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop'
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop'
       ]
     },
     {
@@ -603,10 +585,23 @@ async function main() {
       area: 80,
       imagePath: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
       isShowInHome: false,
+      features: [
+        'Flexible office space for startups',
+        'Shared meeting rooms available',
+        'Reception services included',
+        'High-speed internet access',
+        'Flexible lease terms',
+        'Business support services',
+        'Networking opportunities',
+        'Cost-effective solutions'
+      ],
       galleryImages: [
         'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop'
+        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop'
       ]
     },
     {
@@ -617,10 +612,23 @@ async function main() {
       area: 200,
       imagePath: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
       isShowInHome: true,
+      features: [
+        'Collaborative workspace design',
+        'Open-plan layouts',
+        'Brainstorming areas',
+        'Presentation rooms',
+        'Networking events',
+        'Creative environment',
+        'Tech-friendly facilities',
+        'Innovation-focused community'
+      ],
       galleryImages: [
         'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
         'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop'
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=600&fit=crop'
       ]
     }
   ];
@@ -636,7 +644,7 @@ async function main() {
       });
       
       if (!existingOffice) {
-        const { galleryImages, ...officeInfo } = officeData;
+        const { galleryImages, features, ...officeInfo } = officeData;
         const createdOffice = await prisma.office.create({
           data: {
             title: officeData.title,
@@ -648,6 +656,18 @@ async function main() {
           }
         });
         
+        // Create features for this office
+        if (features && Array.isArray(features)) {
+          for (const featureText of features) {
+            await prisma.officeFeature.create({
+              data: {
+                text: featureText,
+                officeId: createdOffice.id
+              }
+            });
+          }
+        }
+        
         // Create gallery images for this office
         for (const imagePath of galleryImages) {
           await prisma.officeGallery.create({
@@ -657,14 +677,11 @@ async function main() {
             }
           });
         }
-        
-        console.log(`✅ Created office: ${officeData.title} with ${galleryImages.length} gallery images`);
       }
     }
   }
 
   // ==================== POSITIONS SEEDER ====================
-  console.log('👥 Creating positions...');
   
   const positions = [
     'CEO',
@@ -681,12 +698,10 @@ async function main() {
     
     if (!existingPosition) {
       await prisma.position.create({ data: { name: positionName } });
-      console.log(`✅ Created position: ${positionName}`);
     }
   }
 
   // ==================== TEAM MEMBERS SEEDER ====================
-  console.log('👨‍💼 Creating team members...');
   
   const teamMembers = [
     {
@@ -728,13 +743,11 @@ async function main() {
             positionId: position.id
           }
         });
-        console.log(`✅ Created team member: ${memberData.name}`);
       }
     }
   }
 
   // ==================== FAQ CATEGORIES SEEDER ====================
-  console.log('❓ Creating FAQ categories...');
   
   const faqCategories = [
     { name: 'General Information', description: 'General questions about the mall', orderNumber: 1 },
@@ -751,16 +764,280 @@ async function main() {
     
     if (!existingCategory) {
       await prisma.fAQCategory.create({ data: categoryData });
-      console.log(`✅ Created FAQ category: ${categoryData.name}`);
     }
   }
 
-  console.log('🎉 Comprehensive seeder completed successfully!');
+  // ==================== FAQS SEEDER ====================
+  
+  const faqs = [
+    {
+      question: 'What are the mall opening hours?',
+      answer: 'The mall is open from 10:00 AM to 10:00 PM daily, including weekends and holidays.',
+      category: 'General Information',
+      orderNumber: 1
+    },
+    {
+      question: 'Is there parking available?',
+      answer: 'Yes, we have free parking available for all visitors with over 500 parking spaces.',
+      category: 'General Information',
+      orderNumber: 2
+    },
+    {
+      question: 'Do you have WiFi?',
+      answer: 'Yes, free WiFi is available throughout the mall. Connect to "ZagaMall-Free" network.',
+      category: 'Services',
+      orderNumber: 1
+    },
+    {
+      question: 'Are there any restaurants in the mall?',
+      answer: 'Yes, we have a variety of restaurants and cafes offering different cuisines from fast food to fine dining.',
+      category: 'Dining',
+      orderNumber: 1
+    },
+    {
+      question: 'Can I return items purchased from stores?',
+      answer: 'Return policies vary by store. Please check with individual stores for their specific return policies.',
+      category: 'Shopping',
+      orderNumber: 1
+    }
+  ];
+
+  for (const faqData of faqs) {
+    const existingFAQ = await prisma.fAQ.findFirst({
+      where: { question: faqData.question }
+    });
+    
+    if (!existingFAQ) {
+      await prisma.fAQ.create({ data: faqData });
+    }
+  }
+
+  // ==================== PROMOTIONS SEEDER ====================
+  
+  const promotions = [
+    {
+      title: 'Summer Sale - Up to 70% Off',
+      period: 'July 1-31, 2024',
+      description: 'Beat the heat with cool summer discounts across selected fashion stores.',
+      imagePath: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
+      isShowInHome: true
+    },
+    {
+      title: 'Back to School Discounts',
+      period: 'August 1-25, 2024',
+      description: 'Get ready for the new school year with special discounts on supplies and clothing.',
+      imagePath: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&h=600&fit=crop',
+      isShowInHome: true
+    },
+    {
+      title: 'Dining Rewards Program',
+      period: 'Ongoing',
+      description: 'Earn points every time you dine at our food establishments. Redeem for free meals and discounts.',
+      imagePath: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop',
+      isShowInHome: false
+    }
+  ];
+
+  for (const promotionData of promotions) {
+    const existingPromotion = await prisma.promotion.findFirst({
+      where: { title: promotionData.title }
+    });
+    
+    if (!existingPromotion) {
+      await prisma.promotion.create({ data: promotionData });
+    }
+  }
+
+  // ==================== HERO SECTIONS SEEDER ====================
+  
+  const heroSections = [
+    {
+      title: 'Welcome to Zaga Mall',
+      description: 'Your premier shopping and entertainment destination in the heart of the city',
+      imagePath: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
+      orderNumber: 1
+    },
+    {
+      title: 'Discover Amazing Deals',
+      description: 'Find the best prices on fashion, electronics, and more',
+      imagePath: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=800&h=600&fit=crop',
+      orderNumber: 2
+    },
+    {
+      title: 'Experience Entertainment',
+      description: 'From movies to fitness, we have everything for your entertainment needs',
+      imagePath: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&h=600&fit=crop',
+      orderNumber: 3
+    }
+  ];
+
+  for (const heroData of heroSections) {
+    const existingHero = await prisma.heroSection.findFirst({
+      where: { title: heroData.title }
+    });
+    
+    if (!existingHero) {
+      await prisma.heroSection.create({ data: heroData });
+    }
+  }
+
+  // ==================== ABOUT SEEDER ====================
+  
+  const aboutData = {
+    title: 'About Zaga Mall',
+    description: 'Zaga Mall is the premier shopping and entertainment destination in the region, offering a unique blend of retail, dining, and entertainment experiences.',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop',
+    factsAndFigures: [
+      { number: '200+', description: 'Stores and Restaurants' },
+      { number: '50,000+', description: 'Daily Visitors' },
+      { number: '500+', description: 'Parking Spaces' },
+      { number: '24/7', description: 'Security Service' }
+    ],
+    ourValues: [
+      { title: 'Excellence', description: 'We strive for excellence in everything we do' },
+      { title: 'Innovation', description: 'Constantly innovating to provide better experiences' },
+      { title: 'Community', description: 'Building strong relationships with our community' },
+      { title: 'Sustainability', description: 'Committed to environmental responsibility' }
+    ]
+  };
+
+  const existingAbout = await prisma.about.findFirst();
+  if (!existingAbout) {
+    const createdAbout = await prisma.about.create({
+      data: {
+        title: aboutData.title,
+        description: aboutData.description,
+        image: aboutData.image
+      }
+    });
+
+    // Create facts and figures
+    for (const factData of aboutData.factsAndFigures) {
+      await prisma.factAndFigure.create({
+        data: {
+          number: factData.number,
+          description: factData.description,
+          aboutId: createdAbout.id
+        }
+      });
+    }
+
+    // Create our values
+    for (const valueData of aboutData.ourValues) {
+      await prisma.ourValue.create({
+        data: {
+          title: valueData.title,
+          description: valueData.description,
+          aboutId: createdAbout.id
+        }
+      });
+    }
+  }
+
+  // ==================== HOME SETTINGS SEEDER ====================
+  
+  const homeSettings = {
+    quickInfoTitle: 'Quick Information',
+    quickInfoContent: 'Zaga Mall is open daily from 10:00 AM to 10:00 PM. Free parking available. WiFi throughout the mall.'
+  };
+
+  const existingHomeSetting = await prisma.homeSetting.findFirst();
+  if (!existingHomeSetting) {
+    await prisma.homeSetting.create({ data: homeSettings });
+  }
+
+  // ==================== PARKING SEEDER ====================
+  
+  const parkingData = {
+    title: 'Mall Parking',
+    description: 'Convenient parking with over 500 spaces available for visitors. Free parking for all mall customers.',
+    image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&h=600&fit=crop'
+  };
+
+  const existingParking = await prisma.parking.findFirst();
+  if (!existingParking) {
+    await prisma.parking.create({ data: parkingData });
+  }
+
+  // ==================== ITEMS SEEDER ====================
+  
+  const items = [
+    {
+      name: 'Nike Air Max',
+      description: 'Premium athletic shoes for maximum comfort and performance',
+      cardImage: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=600&fit=crop',
+      showOnHomepage: true,
+      brandName: 'Nike'
+    },
+    {
+      name: 'iPhone 15 Pro',
+      description: 'Latest smartphone with advanced features and premium design',
+      cardImage: 'https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&h=600&fit=crop',
+      showOnHomepage: true,
+      brandName: 'Apple'
+    },
+    {
+      name: 'Samsung Galaxy S24',
+      description: 'Flagship Android smartphone with cutting-edge technology',
+      cardImage: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&h=600&fit=crop',
+      showOnHomepage: false,
+      brandName: 'Samsung'
+    }
+  ];
+
+  for (const itemData of items) {
+    const brand = await prisma.brand.findFirst({
+      where: { name: itemData.brandName }
+    });
+
+    if (brand) {
+      const existingItem = await prisma.item.findFirst({
+        where: { name: itemData.name }
+      });
+      
+      if (!existingItem) {
+        const { brandName, ...itemInfo } = itemData;
+        await prisma.item.create({
+          data: {
+            ...itemInfo,
+            brandId: brand.id
+          }
+        });
+      }
+    }
+  }
+
+  // ==================== RESOURCES SEEDER ====================
+  
+  const resources = [
+    {
+      title: 'Mall Directory',
+      description: 'Complete guide to all stores and services in Zaga Mall',
+      filePath: '/resources/mall-directory.pdf',
+      fileType: 'PDF'
+    },
+    {
+      title: 'Parking Guide',
+      description: 'Information about parking locations and rates',
+      filePath: '/resources/parking-guide.pdf',
+      fileType: 'PDF'
+    }
+  ];
+
+  for (const resourceData of resources) {
+    const existingResource = await prisma.resource.findFirst({
+      where: { title: resourceData.title }
+    });
+    
+    if (!existingResource) {
+      await prisma.resource.create({ data: resourceData });
+    }
+  }
+
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Seeder error:', e);
     process.exit(1);
   })
   .finally(async () => {

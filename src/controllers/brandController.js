@@ -4,7 +4,6 @@ const { deleteCloudinaryImage, uploadToCloudinary, deleteFile } = require("../ut
 // Get all brands with pagination, search, and meta
 const getAllBrands = async (req, res) => {
   try {
-    console.log('Brands API called with query:', req.query);
     const {
       page = 1,
       limit = 10,
@@ -30,21 +29,17 @@ const getAllBrands = async (req, res) => {
     orderBy[sortBy] = sortOrder;
 
     // Get total count for pagination
-    console.log('Counting brands with where clause:', whereClause);
     const totalCount = await prisma.brand.count({
       where: whereClause
     });
-    console.log('Total count:', totalCount);
 
     // Get brands with pagination
-    console.log('Fetching brands with params:', { whereClause, orderBy, skip, take: pageSize });
     const brands = await prisma.brand.findMany({
       where: whereClause,
       orderBy: orderBy,
       skip: skip,
       take: pageSize,
     });
-    console.log('Brands found:', brands.length, 'Requested pageSize:', pageSize);
 
     // Calculate pagination meta
     const totalPages = Math.ceil(totalCount / pageSize);
@@ -112,25 +107,14 @@ const getBrandById = async (req, res) => {
 // Create a new brand
 const createBrand = async (req, res) => {
   try {
-    console.log('=== Brand Creation Debug ===');
-    console.log('req.body:', req.body);
-    
     const { name, isShowInHome, image } = req.body;
     if (!name) {
-      console.log('❌ Name is missing');
       return res.status(400).json({ error: "Name is required" });
     }
     
     if (!image) {
-      console.log('❌ Image is missing');
       return res.status(400).json({ error: "Image is required" });
     }
-    
-    console.log('Creating brand with data:', {
-      name,
-      image,
-      isShowInHome: isShowInHome === true || isShowInHome === "true"
-    });
     
     const brand = await prisma.brand.create({
       data: {
@@ -140,10 +124,8 @@ const createBrand = async (req, res) => {
       },
     });
     
-    console.log('✅ Brand created successfully:', brand);
     res.status(201).json({ message: "Brand created successfully", brand });
   } catch (error) {
-    console.error('❌ Error creating brand:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -167,7 +149,6 @@ const updateBrand = async (req, res) => {
         // User wants to remove the image
         if (existingBrand.image) {
           await deleteCloudinaryImage(existingBrand.image);
-          console.log('🗑️ Existing Cloudinary image deleted');
         }
         finalImage = null;
       } else {
@@ -195,8 +176,6 @@ const deleteBrand = async (req, res) => {
   try {
     const { id } = req.params;
     
-    console.log('🗑️ Deleting brand with ID:', id);
-    
     const existingBrand = await prisma.brand.findUnique({
       where: { id: parseInt(id) },
     });
@@ -208,11 +187,8 @@ const deleteBrand = async (req, res) => {
     // Delete Cloudinary image if it exists
     if (existingBrand.image) {
       try {
-        console.log('🗑️ Deleting Cloudinary image:', existingBrand.image);
         await deleteCloudinaryImage(existingBrand.image);
-        console.log('✅ Cloudinary image deleted successfully');
       } catch (deleteError) {
-        console.error('❌ Failed to delete Cloudinary image:', deleteError);
         // Continue with brand deletion even if image deletion fails
       }
     }
@@ -222,10 +198,8 @@ const deleteBrand = async (req, res) => {
       where: { id: parseInt(id) },
     });
 
-    console.log('✅ Brand deleted successfully');
     res.status(200).json({ message: "Brand deleted successfully" });
   } catch (error) {
-    console.error('❌ Error deleting brand:', error);
     res.status(500).json({ error: error.message });
   }
 };

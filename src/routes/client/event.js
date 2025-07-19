@@ -14,8 +14,7 @@ router.get('/', async (req, res) => {
     if (searchTerm) where.title = { contains: searchTerm, mode: 'insensitive' };
     if (isShowInHome !== undefined) where.isShowInHome = isShowInHome === 'true' || isShowInHome === true;
     
-    console.log('Event API - Query params:', { title, search, isShowInHome, page, limit });
-    console.log('Event API - Where clause:', where);
+
     
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const take = parseInt(limit);
@@ -27,8 +26,7 @@ router.get('/', async (req, res) => {
     });
     const total = await prisma.event.count({ where });
     
-    console.log('Event API - Found events:', events.length);
-    console.log('Event API - Total events:', total);
+
     
     // Return all public fields from the Event model
     const publicEvents = events.map(({ id, title, content, coverImage, startDate, endDate, startTime, location, isShowInHome }) => ({
@@ -53,7 +51,7 @@ router.get('/', async (req, res) => {
       }
     };
     
-    console.log('Event API - Response data:', JSON.stringify(responseData, null, 2));
+
     
     res.json(responseData);
   } catch (error) {

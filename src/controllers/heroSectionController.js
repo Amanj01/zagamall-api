@@ -4,7 +4,6 @@ const { deleteFile, deleteCloudinaryImage } = require("../utils/utility");
 // Get all hero sections with pagination, search, and meta
 const getHeroSections = async (req, res) => {
   try {
-    console.log('Hero sections API called with query:', req.query);
     const {
       page = 1,
       limit = 10,
@@ -31,21 +30,17 @@ const getHeroSections = async (req, res) => {
     orderBy[sortBy] = sortOrder;
 
     // Get total count for pagination
-    console.log('Counting hero sections with where clause:', whereClause);
     const totalCount = await prisma.heroSection.count({
       where: whereClause
     });
-    console.log('Total count:', totalCount);
 
     // Get hero sections with pagination
-    console.log('Fetching hero sections with params:', { whereClause, orderBy, skip, take: pageSize });
     const heroSections = await prisma.heroSection.findMany({
       where: whereClause,
       orderBy: orderBy,
       skip: skip,
       take: pageSize,
     });
-    console.log('Hero sections found:', heroSections.length);
 
     // Calculate pagination meta
     const totalPages = Math.ceil(totalCount / pageSize);

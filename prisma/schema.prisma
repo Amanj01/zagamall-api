@@ -177,17 +177,26 @@ model Office {
   image        String?
   locationId   Int
   description  String
-  area         Int
+  area         Int?
   isShowInHome Boolean         @default(false)
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   location     Location        @relation(fields: [locationId], references: [id], onDelete: Cascade)
   gallery      OfficeGallery[]
+  features     OfficeFeature[]
 }
 
 model OfficeGallery {
   id        Int      @id @default(autoincrement())
   imagePath String
+  officeId  Int
+  createdAt DateTime @default(now())
+  office    Office   @relation(fields: [officeId], references: [id], onDelete: Cascade)
+}
+
+model OfficeFeature {
+  id        Int      @id @default(autoincrement())
+  text      String
   officeId  Int
   createdAt DateTime @default(now())
   office    Office   @relation(fields: [officeId], references: [id], onDelete: Cascade)

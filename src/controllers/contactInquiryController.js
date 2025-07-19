@@ -100,9 +100,9 @@ const submitContactInquiry = async (req, res) => {
         `New Contact Inquiry: ${subject}`,
         `New contact inquiry from ${name} (${email}): ${message}`
       );
-      console.log("Admin notification email sent successfully");
+      // Admin notification email sent successfully
     } catch (emailError) {
-      console.error("Failed to send admin notification email:", emailError.message);
+      // Failed to send admin notification email, but continue with response
       // Continue with response, don't fail if email sending fails
     }
 
